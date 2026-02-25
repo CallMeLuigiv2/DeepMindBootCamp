@@ -22,12 +22,12 @@ Build an encoder network that takes a flattened MNIST image (784 dimensions) and
 - Input: (batch_size, 784)
 - Hidden layers: at least two fully connected layers with ReLU activations (e.g., 784 -> 512 -> 256)
 - Two separate output heads branching from the last hidden layer:
-  - `fc_mu`: Linear(256, latent_dim) — outputs the mean of q(z|x)
-  - `fc_logvar`: Linear(256, latent_dim) — outputs the log-variance of q(z|x)
+  - `fc_mu`: Linear(256, latent_dim) — outputs the mean of $q(z|x)$
+  - `fc_logvar`: Linear(256, latent_dim) — outputs the log-variance of $q(z|x)$
 
 **Why log_var instead of sigma?**
 - log_var is unconstrained (can be any real number), so the network can output it directly.
-- sigma = exp(0.5 * log_var) is always positive.
+- $\sigma = \exp(0.5 \cdot \text{log\_var})$ is always positive.
 - This avoids numerical issues with very small or negative standard deviations.
 
 ### 1.2 The Reparameterization Trick
@@ -68,7 +68,7 @@ Implement the VAE loss as the sum of two terms:
 recon_loss = F.binary_cross_entropy(x_recon, x, reduction='sum')
 ```
 
-**KL divergence:** The closed-form KL between N(mu, sigma^2) and N(0, 1):
+**KL divergence:** The closed-form KL between $\mathcal{N}(\mu, \sigma^2)$ and $\mathcal{N}(0, 1)$:
 
 ```python
 kl_loss = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
@@ -107,7 +107,7 @@ Make sure you understand where each formula comes from. Refer to the ELBO deriva
 ### 2.3 Generate New Digits
 
 After training, generate new images by:
-1. Sampling z ~ N(0, I) — a random point in the 2D latent space.
+1. Sampling $z \sim \mathcal{N}(0, I)$ — a random point in the 2D latent space.
 2. Passing z through the decoder.
 3. Reshaping the output to 28x28 and displaying it.
 
@@ -143,7 +143,7 @@ Create a uniform grid of points covering the range [-3, 3] x [-3, 3] in the late
 
 ### 4.1 Linear Interpolation
 
-Choose two test images of different digit classes (e.g., a "3" and a "7"). Encode both to get z_3 and z_7 (use the mu values). Compute 10 evenly spaced points along the line from z_3 to z_7:
+Choose two test images of different digit classes (e.g., a "3" and a "7"). Encode both to get $z_3$ and $z_7$ (use the $\mu$ values). Compute 10 evenly spaced points along the line from $z_3$ to $z_7$:
 
 ```python
 alphas = torch.linspace(0, 1, 10)
@@ -160,7 +160,7 @@ Starting from a random z, take small Gaussian steps in the latent space and deco
 
 ## Part 5: Beta-VAE Experiments
 
-The beta-VAE modifies the loss function:
+The $\beta$-VAE modifies the loss function:
 
 ```python
 loss = recon_loss + beta * kl_loss
@@ -168,7 +168,7 @@ loss = recon_loss + beta * kl_loss
 
 ### 5.1 Vary Beta
 
-Train separate VAE models with beta = 0.1, 0.5, 1.0, 2.0, 5.0, and 10.0. For each:
+Train separate VAE models with $\beta = 0.1, 0.5, 1.0, 2.0, 5.0$, and $10.0$. For each:
 
 1. Record the final reconstruction loss and KL loss.
 2. Generate a grid of 100 samples.
@@ -177,15 +177,15 @@ Train separate VAE models with beta = 0.1, 0.5, 1.0, 2.0, 5.0, and 10.0. For eac
 ### 5.2 Analysis
 
 Create a table or plot showing:
-- beta vs. reconstruction quality (measured by reconstruction loss or visual inspection)
-- beta vs. latent space organization (measured by KL divergence or visual inspection)
+- $\beta$ vs. reconstruction quality (measured by reconstruction loss or visual inspection)
+- $\beta$ vs. latent space organization (measured by KL divergence or visual inspection)
 
 **Expected observations:**
-- Low beta (0.1): sharp reconstructions, but the latent space may have gaps and be less organized.
-- beta = 1.0: the standard VAE tradeoff.
-- High beta (5.0, 10.0): blurrier reconstructions, but the latent space is highly organized with clear separation between classes.
+- Low $\beta$ (0.1): sharp reconstructions, but the latent space may have gaps and be less organized.
+- $\beta = 1.0$: the standard VAE tradeoff.
+- High $\beta$ (5.0, 10.0): blurrier reconstructions, but the latent space is highly organized with clear separation between classes.
 
-**Key insight to articulate:** The beta parameter controls the information bottleneck. Higher beta forces the encoder to compress more aggressively into a distribution close to N(0, I), losing reconstruction detail but gaining a more structured latent space.
+**Key insight to articulate:** The $\beta$ parameter controls the information bottleneck. Higher $\beta$ forces the encoder to compress more aggressively into a distribution close to $\mathcal{N}(0, I)$, losing reconstruction detail but gaining a more structured latent space.
 
 ---
 
@@ -207,7 +207,7 @@ Train the CVAE on MNIST. The loss function is identical to the standard VAE.
 Generate digits by specifying a class label:
 1. Choose a label (e.g., "5").
 2. One-hot encode it.
-3. Sample z ~ N(0, I).
+3. Sample $z \sim \mathcal{N}(0, I)$.
 4. Concatenate z with the one-hot label.
 5. Pass through the decoder.
 

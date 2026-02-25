@@ -26,23 +26,23 @@ That note is the hidden state. The act of reading a word and updating the note i
 
 The vanilla RNN is defined by:
 
-```
-h_t = tanh(W_xh * x_t + W_hh * h_{t-1} + b_h)
-y_t = W_hy * h_t + b_y
-```
+$$\begin{aligned}
+h_t &= \tanh(W_{xh}\, x_t + W_{hh}\, h_{t-1} + b_h) \\
+y_t &= W_{hy}\, h_t + b_y
+\end{aligned}$$
 
 Where:
-- `x_t` is the input at time t (shape: [input_size])
-- `h_t` is the hidden state at time t (shape: [hidden_size])
-- `h_{t-1}` is the hidden state from the previous time step
-- `y_t` is the output at time t (shape: [output_size])
-- `W_xh` is the input-to-hidden weight matrix (shape: [hidden_size, input_size])
-- `W_hh` is the hidden-to-hidden weight matrix (shape: [hidden_size, hidden_size])
-- `W_hy` is the hidden-to-output weight matrix (shape: [output_size, hidden_size])
-- `b_h`, `b_y` are biases
-- `tanh` is the activation function (squashes values to [-1, 1])
+- $x_t$ is the input at time $t$ (shape: [input_size])
+- $h_t$ is the hidden state at time $t$ (shape: [hidden_size])
+- $h_{t-1}$ is the hidden state from the previous time step
+- $y_t$ is the output at time $t$ (shape: [output_size])
+- $W_{xh}$ is the input-to-hidden weight matrix (shape: [hidden_size, input_size])
+- $W_{hh}$ is the hidden-to-hidden weight matrix (shape: [hidden_size, hidden_size])
+- $W_{hy}$ is the hidden-to-output weight matrix (shape: [output_size, hidden_size])
+- $b_h$, $b_y$ are biases
+- $\tanh$ is the activation function (squashes values to $[-1, 1]$)
 
-The initial hidden state h_0 is typically a zero vector.
+The initial hidden state $h_0$ is typically a zero vector.
 
 ### Code: RNN Cell from Scratch
 
@@ -103,11 +103,11 @@ The idea of recurrent connections dates back to the 1980s (Jordan networks, Elma
 
 For tasks where the full sequence is available (classification, tagging — but NOT autoregressive generation), we can run two RNNs:
 
-```
-Forward:  h_t^f = RNN_f(x_t, h_{t-1}^f)    (left to right)
-Backward: h_t^b = RNN_b(x_t, h_{t+1}^b)    (right to left)
-Combined: h_t = [h_t^f ; h_t^b]             (concatenation)
-```
+$$\begin{aligned}
+\text{Forward:} \quad h_t^f &= \text{RNN}_f(x_t,\, h_{t-1}^f) \quad \text{(left to right)} \\
+\text{Backward:} \quad h_t^b &= \text{RNN}_b(x_t,\, h_{t+1}^b) \quad \text{(right to left)} \\
+\text{Combined:} \quad h_t &= [h_t^f \;;\; h_t^b] \quad \text{(concatenation)}
+\end{aligned}$$
 
 The combined hidden state captures both past and future context.
 
@@ -118,14 +118,14 @@ bi_rnn = nn.RNN(input_size=10, hidden_size=20, bidirectional=True, batch_first=T
 
 ### Stacked (Multi-Layer) RNNs
 
-Stack L layers of RNNs. The hidden states of layer l become inputs to layer l+1:
+Stack $L$ layers of RNNs. The hidden states of layer $l$ become inputs to layer $l+1$:
 
-```
-h_t^1 = RNN_1(x_t, h_{t-1}^1)
-h_t^2 = RNN_2(h_t^1, h_{t-1}^2)
-...
-h_t^L = RNN_L(h_t^{L-1}, h_{t-1}^L)
-```
+$$\begin{aligned}
+h_t^{(1)} &= \text{RNN}_1(x_t,\, h_{t-1}^{(1)}) \\
+h_t^{(2)} &= \text{RNN}_2(h_t^{(1)},\, h_{t-1}^{(2)}) \\
+&\;\;\vdots \\
+h_t^{(L)} &= \text{RNN}_L(h_t^{(L-1)},\, h_{t-1}^{(L)})
+\end{aligned}$$
 
 ```python
 stacked_rnn = nn.RNN(input_size=10, hidden_size=20, num_layers=3, batch_first=True)
@@ -146,43 +146,33 @@ When you unroll an RNN across T time steps, you get a very deep feedforward netw
 
 Consider a simple RNN with loss computed at every time step:
 
-```
-h_t = tanh(W * h_{t-1} + U * x_t + b)
-y_t = V * h_t
-L = sum_{t=1}^{T} L_t(y_t, target_t)
-```
+$$\begin{aligned}
+h_t &= \tanh(W h_{t-1} + U x_t + b) \\
+y_t &= V h_t \\
+\mathcal{L} &= \sum_{t=1}^{T} \mathcal{L}_t(y_t, \text{target}_t)
+\end{aligned}$$
 
-We want dL/dW. By the chain rule:
+We want $\frac{\partial \mathcal{L}}{\partial W}$. By the chain rule:
 
-```
-dL/dW = sum_{t=1}^{T} dL_t/dW
-```
+$$\frac{\partial \mathcal{L}}{\partial W} = \sum_{t=1}^{T} \frac{\partial \mathcal{L}_t}{\partial W}$$
 
-For a single time step t:
+For a single time step $t$:
 
-```
-dL_t/dW = dL_t/dy_t * dy_t/dh_t * dh_t/dW
-```
+$$\frac{\partial \mathcal{L}_t}{\partial W} = \frac{\partial \mathcal{L}_t}{\partial y_t} \cdot \frac{\partial y_t}{\partial h_t} \cdot \frac{\partial h_t}{\partial W}$$
 
-But h_t depends on h_{t-1}, which depends on h_{t-2}, and so on. So:
+But $h_t$ depends on $h_{t-1}$, which depends on $h_{t-2}$, and so on. So:
 
-```
-dh_t/dW = partial(h_t)/partial(W) + partial(h_t)/partial(h_{t-1}) * dh_{t-1}/dW
-```
+$$\frac{dh_t}{dW} = \frac{\partial h_t}{\partial W} + \frac{\partial h_t}{\partial h_{t-1}} \cdot \frac{dh_{t-1}}{dW}$$
 
 Expanding recursively:
 
-```
-dL_t/dW = sum_{k=1}^{t} dL_t/dh_t * (prod_{j=k+1}^{t} dh_j/dh_{j-1}) * dh_k/dW
-```
+$$\frac{\partial \mathcal{L}_t}{\partial W} = \sum_{k=1}^{t} \frac{\partial \mathcal{L}_t}{\partial h_t} \left(\prod_{j=k+1}^{t} \frac{\partial h_j}{\partial h_{j-1}}\right) \frac{\partial h_k}{\partial W}$$
 
 The critical term is the product of Jacobians:
 
-```
-prod_{j=k+1}^{t} dh_j/dh_{j-1}
-```
+$$\prod_{j=k+1}^{t} \frac{\partial h_j}{\partial h_{j-1}}$$
 
-Each Jacobian dh_j/dh_{j-1} = diag(1 - h_j^2) * W (for tanh activation, since tanh'(z) = 1 - tanh^2(z)).
+Each Jacobian $\frac{\partial h_j}{\partial h_{j-1}} = \text{diag}(1 - h_j^2) \cdot W$ (for tanh activation, since $\tanh'(z) = 1 - \tanh^2(z)$).
 
 When t - k is large (long-range dependencies), this product either vanishes or explodes.
 
@@ -190,9 +180,7 @@ When t - k is large (long-range dependencies), this product either vanishes or e
 
 Rather than backpropagating through all T steps, truncate after K steps:
 
-```
-dL_t/dW approx sum_{k=max(1,t-K)}^{t} dL_t/dh_t * (prod_{j=k+1}^{t} dh_j/dh_{j-1}) * dh_k/dW
-```
+$$\frac{\partial \mathcal{L}_t}{\partial W} \approx \sum_{k=\max(1,\,t-K)}^{t} \frac{\partial \mathcal{L}_t}{\partial h_t} \left(\prod_{j=k+1}^{t} \frac{\partial h_j}{\partial h_{j-1}}\right) \frac{\partial h_k}{\partial W}$$
 
 In practice:
 1. Process K steps forward.
@@ -230,29 +218,24 @@ The "message" is the gradient signal. The "people" are the time steps.
 
 ### The Math
 
-Consider the gradient of h_T with respect to h_k:
+Consider the gradient of $h_T$ with respect to $h_k$:
 
-```
-dh_T/dh_k = prod_{t=k+1}^{T} dh_t/dh_{t-1}
-           = prod_{t=k+1}^{T} diag(f'(z_t)) * W_hh
-```
+$$\frac{\partial h_T}{\partial h_k} = \prod_{t=k+1}^{T} \frac{\partial h_t}{\partial h_{t-1}} = \prod_{t=k+1}^{T} \text{diag}(f'(z_t)) \cdot W_{hh}$$
 
-where f'(z_t) is the derivative of the activation function at time t.
+where $f'(z_t)$ is the derivative of the activation function at time $t$.
 
-For tanh, f'(z) = 1 - tanh^2(z), so each element is in (0, 1].
+For tanh, $f'(z) = 1 - \tanh^2(z)$, so each element is in $(0, 1]$.
 
-Let us consider the norm of this product. For simplicity, assume f' is approximately constant (say, around some average value). Then:
+Let us consider the norm of this product. For simplicity, assume $f'$ is approximately constant (say, around some average value). Then:
 
-```
-||dh_T/dh_k|| approx ||diag(f') * W_hh||^{T-k}
-```
+$$\left\|\frac{\partial h_T}{\partial h_k}\right\| \approx \|\text{diag}(f') \cdot W_{hh}\|^{T-k}$$
 
-Let sigma_max be the largest singular value of (diag(f') * W_hh). Then:
+Let $\sigma_{\max}$ be the largest singular value of $\text{diag}(f') \cdot W_{hh}$. Then:
 
-- If sigma_max < 1: ||dh_T/dh_k|| shrinks exponentially as (T-k) grows. **Gradients vanish.**
-- If sigma_max > 1: ||dh_T/dh_k|| grows exponentially. **Gradients explode.**
+- If $\sigma_{\max} < 1$: $\left\|\frac{\partial h_T}{\partial h_k}\right\|$ shrinks exponentially as $(T-k)$ grows. **Gradients vanish.**
+- If $\sigma_{\max} > 1$: $\left\|\frac{\partial h_T}{\partial h_k}\right\|$ grows exponentially. **Gradients explode.**
 
-More precisely, consider the eigenvalue decomposition of W_hh = Q * Lambda * Q^{-1}. The product of T copies of W_hh is Q * Lambda^T * Q^{-1}. If the largest eigenvalue magnitude |lambda_max| < 1, then Lambda^T -> 0 as T -> infinity. If |lambda_max| > 1, Lambda^T -> infinity.
+More precisely, consider the eigenvalue decomposition $W_{hh} = Q \Lambda Q^{-1}$. The product of $T$ copies of $W_{hh}$ is $Q \Lambda^T Q^{-1}$. If the largest eigenvalue magnitude $|\lambda_{\max}| < 1$, then $\Lambda^T \to 0$ as $T \to \infty$. If $|\lambda_{\max}| > 1$, $\Lambda^T \to \infty$.
 
 **Key insight**: There is no stable middle ground for vanilla RNNs. The eigenvalue must be *exactly* 1 for gradients to neither vanish nor explode, and this is a measure-zero set in parameter space. In practice, vanilla RNNs cannot learn dependencies beyond approximately 10-20 time steps.
 
@@ -315,26 +298,26 @@ The belt itself is the cell state. It flows through time with minimal interferen
 
 The LSTM cell computes the following at each time step:
 
-```
-Forget gate:    f_t = sigmoid(W_f * [h_{t-1}, x_t] + b_f)
-Input gate:     i_t = sigmoid(W_i * [h_{t-1}, x_t] + b_i)
-Candidate:      g_t = tanh(W_g * [h_{t-1}, x_t] + b_g)
-Cell update:    C_t = f_t * C_{t-1} + i_t * g_t
-Output gate:    o_t = sigmoid(W_o * [h_{t-1}, x_t] + b_o)
-Hidden state:   h_t = o_t * tanh(C_t)
-```
+$$\begin{aligned}
+f_t &= \sigma(W_f [h_{t-1},\, x_t] + b_f) & \text{(forget gate)} \\
+i_t &= \sigma(W_i [h_{t-1},\, x_t] + b_i) & \text{(input gate)} \\
+\tilde{C}_t &= \tanh(W_g [h_{t-1},\, x_t] + b_g) & \text{(candidate)} \\
+C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t & \text{(cell update)} \\
+o_t &= \sigma(W_o [h_{t-1},\, x_t] + b_o) & \text{(output gate)} \\
+h_t &= o_t \odot \tanh(C_t) & \text{(hidden state)}
+\end{aligned}$$
 
 Where:
-- `[h_{t-1}, x_t]` denotes concatenation of the previous hidden state and current input.
-- `*` denotes element-wise (Hadamard) multiplication.
-- All gates use sigmoid activation (output in [0, 1], acting as soft switches).
-- The candidate uses tanh (output in [-1, 1], creating new content).
+- $[h_{t-1}, x_t]$ denotes concatenation of the previous hidden state and current input.
+- $\odot$ denotes element-wise (Hadamard) multiplication.
+- All gates use sigmoid activation $\sigma$ (output in $[0, 1]$, acting as soft switches).
+- The candidate uses $\tanh$ (output in $[-1, 1]$, creating new content).
 
-Dimensions (assuming input_size=d, hidden_size=n):
-- Each W matrix: [n, n+d] (because input is concatenation of h and x)
-- Each bias: [n]
-- Cell state C_t: [n]
-- Hidden state h_t: [n]
+Dimensions (assuming input_size=$d$, hidden_size=$n$):
+- Each $W$ matrix: $[n, n+d]$ (because input is concatenation of $h$ and $x$)
+- Each bias: $[n]$
+- Cell state $C_t$: $[n]$
+- Hidden state $h_t$: $[n]$
 
 ### Why Each Gate Exists
 
@@ -350,25 +333,19 @@ Dimensions (assuming input_size=d, hidden_size=n):
 
 The cell state update equation is:
 
-```
-C_t = f_t * C_{t-1} + i_t * g_t
-```
+$$C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$$
 
-The gradient of C_T with respect to C_k is:
+The gradient of $C_T$ with respect to $C_k$ is:
 
-```
-dC_T/dC_k = prod_{t=k+1}^{T} f_t
-```
+$$\frac{\partial C_T}{\partial C_k} = \prod_{t=k+1}^{T} f_t$$
 
 (Ignoring second-order terms through the gates, which are smaller.)
 
-Each f_t has elements in (0, 1). If the forget gate learns to be close to 1 for important information, the gradient flows through time almost unimpeded:
+Each $f_t$ has elements in $(0, 1)$. If the forget gate learns to be close to 1 for important information, the gradient flows through time almost unimpeded:
 
-```
-dC_T/dC_k approx 1^{T-k} = 1
-```
+$$\frac{\partial C_T}{\partial C_k} \approx 1^{T-k} = 1$$
 
-Compare this to the vanilla RNN where the gradient involves products of W_hh and activation derivatives — a chain of matrix multiplications that amplifies or attenuates exponentially.
+Compare this to the vanilla RNN where the gradient involves products of $W_{hh}$ and activation derivatives — a chain of matrix multiplications that amplifies or attenuates exponentially.
 
 This is why the LSTM solves vanishing gradients: the cell state provides a *linear* pathway (add and element-wise multiply, no matrix multiplication) through which gradients can flow.
 
@@ -624,18 +601,18 @@ The GRU is the LSTM's leaner sibling. It asks: do we really need separate cell s
 
 ### The Math
 
-```
-Reset gate:  r_t = sigmoid(W_r * [h_{t-1}, x_t] + b_r)
-Update gate: z_t = sigmoid(W_z * [h_{t-1}, x_t] + b_z)
-Candidate:   h_tilde_t = tanh(W_h * [r_t * h_{t-1}, x_t] + b_h)
-Hidden:      h_t = (1 - z_t) * h_{t-1} + z_t * h_tilde_t
-```
+$$\begin{aligned}
+r_t &= \sigma(W_r [h_{t-1},\, x_t] + b_r) & \text{(reset gate)} \\
+z_t &= \sigma(W_z [h_{t-1},\, x_t] + b_z) & \text{(update gate)} \\
+\tilde{h}_t &= \tanh(W_h [r_t \odot h_{t-1},\, x_t] + b_h) & \text{(candidate)} \\
+h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t & \text{(hidden state)}
+\end{aligned}$$
 
-**Reset gate (r_t)**: Controls how much of the previous hidden state to use when computing the candidate. When r_t is close to 0, the candidate is computed mostly from the current input, effectively "resetting" the memory. This is useful when the current input represents a sharp context change.
+**Reset gate ($r_t$)**: Controls how much of the previous hidden state to use when computing the candidate. When $r_t$ is close to 0, the candidate is computed mostly from the current input, effectively "resetting" the memory. This is useful when the current input represents a sharp context change.
 
-**Update gate (z_t)**: Controls the interpolation between the old hidden state and the new candidate. This single gate plays the roles of both the forget gate and the input gate in LSTM. When z_t is close to 0, the hidden state stays the same (old information is retained). When z_t is close to 1, the hidden state is replaced with the candidate (new information dominates).
+**Update gate ($z_t$)**: Controls the interpolation between the old hidden state and the new candidate. This single gate plays the roles of both the forget gate and the input gate in LSTM. When $z_t$ is close to 0, the hidden state stays the same (old information is retained). When $z_t$ is close to 1, the hidden state is replaced with the candidate (new information dominates).
 
-Note the elegant constraint: the coefficients (1 - z_t) and z_t sum to 1, so the update is a proper interpolation. No information is created or destroyed, only mixed.
+Note the elegant constraint: the coefficients $(1 - z_t)$ and $z_t$ sum to 1, so the update is a proper interpolation. No information is created or destroyed, only mixed.
 
 ### Code: GRU Cell from Scratch
 
@@ -705,13 +682,13 @@ class ManualGRUCell:
 
 A variant of LSTM where the gates can see the cell state directly:
 
-```
-f_t = sigmoid(W_f * [h_{t-1}, x_t] + W_pf * C_{t-1} + b_f)
-i_t = sigmoid(W_i * [h_{t-1}, x_t] + W_pi * C_{t-1} + b_i)
-o_t = sigmoid(W_o * [h_{t-1}, x_t] + W_po * C_t + b_o)
-```
+$$\begin{aligned}
+f_t &= \sigma(W_f [h_{t-1}, x_t] + W_{pf} \odot C_{t-1} + b_f) \\
+i_t &= \sigma(W_i [h_{t-1}, x_t] + W_{pi} \odot C_{t-1} + b_i) \\
+o_t &= \sigma(W_o [h_{t-1}, x_t] + W_{po} \odot C_t + b_o)
+\end{aligned}$$
 
-The W_p matrices are diagonal (element-wise connections from cell state to gates). This gives gates direct access to the memory contents. In practice, peephole connections provide marginal improvement and are rarely used.
+The $W_p$ matrices are diagonal (element-wise connections from cell state to gates). This gives gates direct access to the memory contents. In practice, peephole connections provide marginal improvement and are rarely used.
 
 ### Historical Context
 
@@ -729,23 +706,17 @@ The encoder-decoder architecture mimics this process.
 
 ### The Architecture
 
-**Encoder**: An LSTM (or GRU) reads the source sequence x_1, x_2, ..., x_S one token at a time. The final hidden state h_S (and cell state C_S for LSTM) is the "context vector" — a fixed-size summary of the entire source.
+**Encoder**: An LSTM (or GRU) reads the source sequence $x_1, x_2, \ldots, x_S$ one token at a time. The final hidden state $h_S$ (and cell state $C_S$ for LSTM) is the "context vector" -- a fixed-size summary of the entire source.
 
-**Decoder**: Another LSTM, initialized with the encoder's final states, generates the target sequence y_1, y_2, ..., y_T one token at a time. At each step, it takes the previous output (or ground truth during training) as input and produces a probability distribution over the vocabulary.
+**Decoder**: Another LSTM, initialized with the encoder's final states, generates the target sequence $y_1, y_2, \ldots, y_T$ one token at a time. At each step, it takes the previous output (or ground truth during training) as input and produces a probability distribution over the vocabulary.
 
-```
-Encoder:
-  for s = 1 to S:
-    h_s^enc, C_s^enc = LSTM_enc(x_s, h_{s-1}^enc, C_{s-1}^enc)
-  context = h_S^enc  (and C_S^enc)
-
-Decoder (initialized with context):
-  h_0^dec = h_S^enc
-  C_0^dec = C_S^enc
-  for t = 1 to T:
-    h_t^dec, C_t^dec = LSTM_dec(y_{t-1}, h_{t-1}^dec, C_{t-1}^dec)
-    p(y_t) = softmax(W_vocab * h_t^dec + b_vocab)
-```
+$$\begin{aligned}
+\textbf{Encoder:} \quad & h_s^{enc}, C_s^{enc} = \text{LSTM}_{enc}(x_s,\, h_{s-1}^{enc},\, C_{s-1}^{enc}) \quad \text{for } s = 1 \ldots S \\
+& \text{context} = h_S^{enc} \\[6pt]
+\textbf{Decoder:} \quad & h_0^{dec} = h_S^{enc}, \quad C_0^{dec} = C_S^{enc} \\
+& h_t^{dec}, C_t^{dec} = \text{LSTM}_{dec}(y_{t-1},\, h_{t-1}^{dec},\, C_{t-1}^{dec}) \quad \text{for } t = 1 \ldots T \\
+& p(y_t) = \text{softmax}(W_{vocab}\, h_t^{dec} + b_{vocab})
+\end{aligned}$$
 
 ### The Information Bottleneck
 
@@ -939,41 +910,40 @@ When translating "Le chat noir dort sur le tapis" to "The black cat sleeps on th
 
 Bahdanau et al. (2015) proposed the following:
 
-At decoder time step t, with decoder hidden state s_{t-1} and encoder hidden states h_1, ..., h_S:
+At decoder time step $t$, with decoder hidden state $s_{t-1}$ and encoder hidden states $h_1, \ldots, h_S$:
 
 **Step 1: Compute alignment scores**
-```
-e_{t,j} = v^T * tanh(W_s * s_{t-1} + W_h * h_j)
-```
-for each encoder position j = 1, ..., S.
+
+$$e_{t,j} = v^\top \tanh(W_s\, s_{t-1} + W_h\, h_j)$$
+
+for each encoder position $j = 1, \ldots, S$.
 
 Here:
-- W_s: (alignment_dim, decoder_hidden_size) — projects decoder state
-- W_h: (alignment_dim, encoder_hidden_size) — projects encoder state
-- v: (alignment_dim,) — learnable vector that produces a scalar score
+- $W_s$: (alignment_dim, decoder_hidden_size) -- projects decoder state
+- $W_h$: (alignment_dim, encoder_hidden_size) -- projects encoder state
+- $v$: (alignment_dim,) -- learnable vector that produces a scalar score
 - alignment_dim is a hyperparameter (often equal to hidden_size)
 
-The score e_{t,j} measures how relevant encoder position j is to decoder step t.
+The score $e_{t,j}$ measures how relevant encoder position $j$ is to decoder step $t$.
 
 **Step 2: Normalize with softmax**
-```
-alpha_{t,j} = exp(e_{t,j}) / sum_{k=1}^{S} exp(e_{t,k})
-```
 
-The attention weights alpha_{t,j} form a probability distribution over source positions. They sum to 1.
+$$\alpha_{t,j} = \frac{\exp(e_{t,j})}{\sum_{k=1}^{S} \exp(e_{t,k})}$$
+
+The attention weights $\alpha_{t,j}$ form a probability distribution over source positions. They sum to 1.
 
 **Step 3: Compute context vector**
-```
-c_t = sum_{j=1}^{S} alpha_{t,j} * h_j
-```
+
+$$c_t = \sum_{j=1}^{S} \alpha_{t,j}\, h_j$$
 
 The context vector is a weighted average of all encoder hidden states, where the weights reflect relevance to the current decoding step.
 
 **Step 4: Use context for prediction**
-```
-s_t = LSTM(y_{t-1}, s_{t-1}, c_t)
-p(y_t) = softmax(W_out * [s_t; c_t] + b_out)
-```
+
+$$\begin{aligned}
+s_t &= \text{LSTM}(y_{t-1},\, s_{t-1},\, c_t) \\
+p(y_t) &= \text{softmax}(W_{out} [s_t;\, c_t] + b_{out})
+\end{aligned}$$
 
 The context vector is concatenated with the decoder state and used for both the LSTM update and the output prediction.
 
@@ -1033,44 +1003,43 @@ In this example, the decoder is heavily attending to position 3 (weight 0.70). I
 Luong et al. (2015) proposed simpler score functions:
 
 **Dot product**:
-```
-e_{t,j} = s_t^T * h_j
-```
-Requires encoder and decoder hidden sizes to be equal. Very fast — just a dot product.
+
+$$e_{t,j} = s_t^\top h_j$$
+
+Requires encoder and decoder hidden sizes to be equal. Very fast -- just a dot product.
 
 **General (bilinear)**:
-```
-e_{t,j} = s_t^T * W_a * h_j
-```
-W_a: (decoder_hidden_size, encoder_hidden_size) is a learnable matrix. Works with different hidden sizes.
+
+$$e_{t,j} = s_t^\top W_a\, h_j$$
+
+$W_a \in \mathbb{R}^{d_s \times d_h}$ is a learnable matrix. Works with different hidden sizes.
 
 **Concat** (same as Bahdanau):
-```
-e_{t,j} = v^T * tanh(W * [s_t; h_j])
-```
 
-Luong attention uses the current decoder state s_t (not s_{t-1} as in Bahdanau). The context is computed *after* the decoder LSTM step, not before. This is a subtle but notable difference.
+$$e_{t,j} = v^\top \tanh(W [s_t;\, h_j])$$
+
+Luong attention uses the current decoder state $s_t$ (not $s_{t-1}$ as in Bahdanau). The context is computed *after* the decoder LSTM step, not before. This is a subtle but notable difference.
 
 | Score Function | Formula | Parameters | Speed |
 |---|---|---|---|
-| Dot | s^T h | 0 | Fastest |
-| General | s^T W h | d_s * d_h | Medium |
-| Additive (Bahdanau) | v^T tanh(W_s s + W_h h) | d_a*(d_s+d_h) + d_a | Slowest |
+| Dot | $s^\top h$ | 0 | Fastest |
+| General | $s^\top W h$ | $d_s \times d_h$ | Medium |
+| Additive (Bahdanau) | $v^\top \tanh(W_s s + W_h h)$ | $d_a(d_s+d_h) + d_a$ | Slowest |
 
-In practice, dot product attention scaled by sqrt(d) (as in Transformers) works very well and is the most common choice.
+In practice, dot product attention scaled by $\sqrt{d}$ (as in Transformers) works very well and is the most common choice.
 
 ### Attention as Soft Lookup (Query-Key-Value)
 
 Reframe attention using the terminology that will become central to Transformers:
 
-- **Query (Q)**: What the decoder is looking for. Derived from s_t.
-- **Key (K)**: What each encoder position offers as a "label." Derived from h_j.
-- **Value (V)**: The actual content at each encoder position. Also derived from h_j (or a separate projection).
+- **Query (Q)**: What the decoder is looking for. Derived from $s_t$.
+- **Key (K)**: What each encoder position offers as a "label." Derived from $h_j$.
+- **Value (V)**: The actual content at each encoder position. Also derived from $h_j$ (or a separate projection).
 
 The attention computation is:
-1. Compute similarity between query and each key: score(Q, K_j)
-2. Normalize similarities: alpha_j = softmax(scores)
-3. Weighted sum of values: output = sum(alpha_j * V_j)
+1. Compute similarity between query and each key: $\text{score}(Q, K_j)$
+2. Normalize similarities: $\alpha_j = \text{softmax}(\text{scores})$
+3. Weighted sum of values: $\text{output} = \sum_j \alpha_j V_j$
 
 This is a *differentiable dictionary lookup*. In a regular dictionary, you have an exact key match and retrieve one value. In attention, you have a soft match against all keys and retrieve a weighted combination of all values.
 
@@ -1245,7 +1214,7 @@ Luong, Pham, and Manning published "Effective Approaches to Attention-based Neur
 
 - **LSTM forget gate bias**: Initialize to 1.0 or even 2.0. This ensures the network starts by remembering and learns what to forget. Without this, the forget gate starts near 0.5, which means the network immediately loses half the cell state at each step. (Jozefowicz et al., 2015, "An Empirical Exploration of Recurrent Network Architectures")
 
-- **Weight matrices**: Xavier/Glorot initialization or orthogonal initialization. Orthogonal initialization of W_hh is particularly helpful — it ensures the eigenvalues start near 1, which gives gradients the best chance of flowing well at the start of training.
+- **Weight matrices**: Xavier/Glorot initialization or orthogonal initialization. Orthogonal initialization of $W_{hh}$ is particularly helpful -- it ensures the eigenvalues start near 1, which gives gradients the best chance of flowing well at the start of training.
 
 ```python
 # Orthogonal initialization for recurrent weights

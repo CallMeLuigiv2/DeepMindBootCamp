@@ -34,11 +34,11 @@ By the end of this session, the apprentice will be able to:
 
 ### Block 1: Autoencoder Review and the Generation Problem (30 min)
 
-**Core idea:** An autoencoder learns to compress data into a bottleneck (the latent code z) and reconstruct it. The encoder maps x -> z, the decoder maps z -> x_hat, and we minimize reconstruction loss ||x - x_hat||^2.
+**Core idea:** An autoencoder learns to compress data into a bottleneck (the latent code $z$) and reconstruct it. The encoder maps $x \to z$, the decoder maps $z \to \hat{x}$, and we minimize reconstruction loss $\|x - \hat{x}\|^2$.
 
 **The problem with vanilla autoencoders for generation:**
 
-Draw the latent space of a trained autoencoder on MNIST. The encoder maps each training image to a specific point in z-space. But these points are scattered irregularly. If you sample a random z that falls *between* encoded training points, the decoder produces garbage — it was never trained on that region.
+Draw the latent space of a trained autoencoder on MNIST. The encoder maps each training image to a specific point in $z$-space. But these points are scattered irregularly. If you sample a random $z$ that falls *between* encoded training points, the decoder produces garbage — it was never trained on that region.
 
 Walk through a concrete example:
 - Encode digit "3" -> z = [1.2, 0.8]
@@ -51,21 +51,21 @@ The latent space has "holes" — regions with no training signal. The autoencode
 
 ### Block 2: From Autoencoders to Variational Inference (45 min)
 
-**The big idea:** Instead of encoding each input to a *point* z, encode it to a *distribution* over z. Specifically, the encoder outputs the parameters (mean mu and variance sigma^2) of a Gaussian distribution q(z|x) = N(mu, sigma^2).
+**The big idea:** Instead of encoding each input to a *point* $z$, encode it to a *distribution* over $z$. Specifically, the encoder outputs the parameters (mean $\mu$ and variance $\sigma^2$) of a Gaussian distribution $q(z|x) = \mathcal{N}(\mu, \sigma^2)$.
 
 **Why distributions fix the problem:**
 - Each input now "claims" a region of latent space, not just a point.
-- We add a regularizer that pushes these distributions toward a standard normal N(0, I).
+- We add a regularizer that pushes these distributions toward a standard normal $\mathcal{N}(0, I)$.
 - This forces the distributions to overlap, filling in the gaps.
 - Now every region of latent space has been "trained on" — sampling anywhere produces meaningful outputs.
 
 **Variational inference intuition:**
 
-We want to model p(x) — the true distribution of images. We introduce a latent variable z such that:
+We want to model $p(x)$ — the true distribution of images. We introduce a latent variable $z$ such that:
 
-    p(x) = integral over z of p(x|z) * p(z) dz
+$$p(x) = \int p(x|z) \, p(z) \, dz$$
 
-This integral is intractable (we'd need to integrate over all possible z). So we introduce an approximate posterior q(z|x) that we can actually compute. The gap between our approximation and reality is measured by KL divergence.
+This integral is intractable (we'd need to integrate over all possible $z$). So we introduce an approximate posterior $q(z|x)$ that we can actually compute. The gap between our approximation and reality is measured by KL divergence.
 
 **Key papers to reference:**
 - Kingma & Welling, "Auto-Encoding Variational Bayes" (2013) — the original VAE paper
@@ -75,56 +75,56 @@ This integral is intractable (we'd need to integrate over all possible z). So we
 
 This is the mathematical heart of the session. Go slowly. Every step must land.
 
-**Starting point:** We want to maximize log p(x) for each training example x.
+**Starting point:** We want to maximize $\log p(x)$ for each training example $x$.
 
 **Step 1:** Introduce the latent variable.
 
-    log p(x) = log integral p(x, z) dz
+$$\log p(x) = \log \int p(x, z) \, dz$$
 
-**Step 2:** This integral is intractable. Introduce q(z|x), multiply and divide:
+**Step 2:** This integral is intractable. Introduce $q(z|x)$, multiply and divide:
 
-    log p(x) = log integral [p(x, z) / q(z|x)] * q(z|x) dz
+$$\log p(x) = \log \int \frac{p(x, z)}{q(z|x)} \cdot q(z|x) \, dz$$
 
-**Step 3:** Apply Jensen's inequality (log of expectation >= expectation of log):
+**Step 3:** Apply Jensen's inequality (log of expectation $\geq$ expectation of log):
 
-    log p(x) >= E_{q(z|x)}[log p(x, z) - log q(z|x)]
+$$\log p(x) \geq \mathbb{E}_{q(z|x)}[\log p(x, z) - \log q(z|x)]$$
 
-**Step 4:** Expand p(x, z) = p(x|z) * p(z):
+**Step 4:** Expand $p(x, z) = p(x|z) \cdot p(z)$:
 
-    log p(x) >= E_{q(z|x)}[log p(x|z)] - KL(q(z|x) || p(z))
+$$\log p(x) \geq \mathbb{E}_{q(z|x)}[\log p(x|z)] - D_{KL}(q(z|x) \| p(z))$$
 
 This is the ELBO. Spend significant time on what each term means:
-- E_{q(z|x)}[log p(x|z)]: "How well can the decoder reconstruct x from z samples drawn from the encoder?" This is the *reconstruction term*.
-- KL(q(z|x) || p(z)): "How far is the encoder's output distribution from the prior?" This is the *regularization term*.
+- $\mathbb{E}_{q(z|x)}[\log p(x|z)]$: "How well can the decoder reconstruct $x$ from $z$ samples drawn from the encoder?" This is the *reconstruction term*.
+- $D_{KL}(q(z|x) \| p(z))$: "How far is the encoder's output distribution from the prior?" This is the *regularization term*.
 
 **Derivation walkthrough on the board:**
-1. Write log p(x) = log p(x) * integral q(z|x) dz (since the integral equals 1)
-2. Bring log p(x) inside: integral q(z|x) log p(x) dz
-3. Use Bayes' rule: log p(x) = log p(z|x) - log p(z) + log p(x) ... (alternative derivation path)
-4. Show the gap: log p(x) = ELBO + KL(q(z|x) || p(z|x)), where the second term is always >= 0
-5. Therefore maximizing the ELBO is a valid proxy for maximizing log p(x)
+1. Write $\log p(x) = \log p(x) \cdot \int q(z|x) \, dz$ (since the integral equals 1)
+2. Bring $\log p(x)$ inside: $\int q(z|x) \log p(x) \, dz$
+3. Use Bayes' rule: $\log p(x) = \log p(z|x) - \log p(z) + \log p(x)$ ... (alternative derivation path)
+4. Show the gap: $\log p(x) = \text{ELBO} + D_{KL}(q(z|x) \| p(z|x))$, where the second term is always $\geq 0$
+5. Therefore maximizing the ELBO is a valid proxy for maximizing $\log p(x)$
 
-**The beta-VAE extension:**
+**The $\beta$-VAE extension:**
 
-    L = E_{q(z|x)}[log p(x|z)] - beta * KL(q(z|x) || p(z))
+$$\mathcal{L} = \mathbb{E}_{q(z|x)}[\log p(x|z)] - \beta \cdot D_{KL}(q(z|x) \| p(z))$$
 
-When beta > 1, we emphasize regularization — the latent space becomes more organized but reconstructions become blurrier. When beta < 1, we get sharper reconstructions but a less structured latent space. This tradeoff is fundamental.
+When $\beta > 1$, we emphasize regularization — the latent space becomes more organized but reconstructions become blurrier. When $\beta < 1$, we get sharper reconstructions but a less structured latent space. This tradeoff is fundamental.
 
 ### Block 4: The Reparameterization Trick (30 min)
 
-**The problem:** To compute the reconstruction term, we need to sample z ~ q(z|x) = N(mu, sigma^2). But sampling is not differentiable — you can't backpropagate through a random number generator.
+**The problem:** To compute the reconstruction term, we need to sample $z \sim q(z|x) = \mathcal{N}(\mu, \sigma^2)$. But sampling is not differentiable — you can't backpropagate through a random number generator.
 
-**The solution:** Instead of sampling z directly from N(mu, sigma^2), we:
-1. Sample epsilon ~ N(0, I) — this is independent of the model parameters
-2. Compute z = mu + sigma * epsilon
+**The solution:** Instead of sampling $z$ directly from $\mathcal{N}(\mu, \sigma^2)$, we:
+1. Sample $\epsilon \sim \mathcal{N}(0, I)$ — this is independent of the model parameters
+2. Compute $z = \mu + \sigma \cdot \epsilon$
 
-Now z is a deterministic function of mu, sigma, and epsilon. The gradients flow through mu and sigma just fine. The randomness is "externalized" into epsilon.
+Now $z$ is a deterministic function of $\mu$, $\sigma$, and $\epsilon$. The gradients flow through $\mu$ and $\sigma$ just fine. The randomness is "externalized" into $\epsilon$.
 
 **Draw the computation graph both ways:**
-- Without trick: x -> encoder -> mu, sigma -> [SAMPLE] -> z -> decoder -> x_hat (gradient blocked at [SAMPLE])
-- With trick: x -> encoder -> mu, sigma; epsilon ~ N(0,I); z = mu + sigma * epsilon -> decoder -> x_hat (gradient flows through mu and sigma)
+- Without trick: $x \to \text{encoder} \to \mu, \sigma \to [\text{SAMPLE}] \to z \to \text{decoder} \to \hat{x}$ (gradient blocked at [SAMPLE])
+- With trick: $x \to \text{encoder} \to \mu, \sigma$; $\epsilon \sim \mathcal{N}(0,I)$; $z = \mu + \sigma \cdot \epsilon \to \text{decoder} \to \hat{x}$ (gradient flows through $\mu$ and $\sigma$)
 
-**Common mistake to flag:** Students often write sigma directly. In practice, the encoder outputs log(sigma^2) = log_var, and we compute sigma = exp(0.5 * log_var). This ensures sigma is always positive and is more numerically stable.
+**Common mistake to flag:** Students often write $\sigma$ directly. In practice, the encoder outputs $\log(\sigma^2) = \text{log\_var}$, and we compute $\sigma = \exp(0.5 \cdot \text{log\_var})$. This ensures $\sigma$ is always positive and is more numerically stable.
 
 ### Block 5: Implementation and Coding Exercise (30 min)
 
@@ -201,34 +201,34 @@ By the end of this session, the apprentice will be able to:
 **The core metaphor:** A counterfeiter (generator G) tries to produce fake banknotes. A detective (discriminator D) tries to distinguish real from fake. As the detective gets better, the counterfeiter must improve. As the counterfeiter improves, the detective must sharpen. This competition drives both to excellence.
 
 **Formal setup:**
-- G takes random noise z ~ p(z) and produces a fake sample G(z)
-- D takes a sample (real or fake) and outputs D(x) in [0, 1] — the probability the sample is real
-- G wants to fool D: make D(G(z)) close to 1
-- D wants to be correct: D(x_real) close to 1, D(G(z)) close to 0
+- $G$ takes random noise $z \sim p(z)$ and produces a fake sample $G(z)$
+- $D$ takes a sample (real or fake) and outputs $D(x) \in [0, 1]$ — the probability the sample is real
+- $G$ wants to fool $D$: make $D(G(z))$ close to 1
+- $D$ wants to be correct: $D(x_{\text{real}})$ close to 1, $D(G(z))$ close to 0
 
 **The minimax objective:**
 
-    min_G max_D V(D, G) = E_{x~p_data}[log D(x)] + E_{z~p(z)}[log(1 - D(G(z)))]
+$$\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p(z)}[\log(1 - D(G(z)))]$$
 
-**Nash equilibrium:** The game reaches equilibrium when G produces samples indistinguishable from real data (p_G = p_data), and D outputs 1/2 for everything (it literally cannot tell). In practice, we never perfectly reach this equilibrium.
+**Nash equilibrium:** The game reaches equilibrium when $G$ produces samples indistinguishable from real data ($p_G = p_{\text{data}}$), and $D$ outputs $1/2$ for everything (it literally cannot tell). In practice, we never perfectly reach this equilibrium.
 
 **Key paper:** Goodfellow et al. (2014). "Generative Adversarial Nets." NeurIPS.
 
 ### Block 2: The Original GAN Loss and Its Problems (40 min)
 
-**Discriminator training:** Fix G, maximize:
+**Discriminator training:** Fix $G$, maximize:
 
-    L_D = E_{x~p_data}[log D(x)] + E_{z~p(z)}[log(1 - D(G(z)))]
+$$\mathcal{L}_D = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p(z)}[\log(1 - D(G(z)))]$$
 
 This is binary cross-entropy. The discriminator is just a binary classifier: real vs fake.
 
-**Generator training:** Fix D, minimize:
+**Generator training:** Fix $D$, minimize:
 
-    L_G = E_{z~p(z)}[log(1 - D(G(z)))]
+$$\mathcal{L}_G = \mathbb{E}_{z \sim p(z)}[\log(1 - D(G(z)))]$$
 
 Or equivalently (and more commonly used in practice), maximize:
 
-    L_G = E_{z~p(z)}[log D(G(z))]
+$$\mathcal{L}_G = \mathbb{E}_{z \sim p(z)}[\log D(G(z))]$$
 
 This alternative form has better gradient properties early in training.
 
@@ -236,7 +236,7 @@ This alternative form has better gradient properties early in training.
 
 Walk through the dynamics: D learns to reject "7"s -> G switches to "3"s -> D learns to reject "3"s -> G switches back to "7"s. The generator oscillates between modes instead of covering all of them.
 
-**Problem 2 — Vanishing gradients:** If D becomes too good (D(G(z)) approaches 0), then log(1 - D(G(z))) saturates and the gradient for G vanishes. The generator receives no learning signal. This is the fundamental problem: a perfect discriminator is useless for training the generator.
+**Problem 2 — Vanishing gradients:** If $D$ becomes too good ($D(G(z))$ approaches 0), then $\log(1 - D(G(z)))$ saturates and the gradient for $G$ vanishes. The generator receives no learning signal. This is the fundamental problem: a perfect discriminator is useless for training the generator.
 
 **Problem 3 — Oscillation:** Neither network converges; they chase each other in parameter space. D gets better, then G adjusts, then D has to readjust. There is no guarantee of convergence with gradient descent on minimax objectives.
 
@@ -246,21 +246,21 @@ Walk through the dynamics: D learns to reject "7"s -> G switches to "3"s -> D le
 
 **The key insight (Arjovsky et al., 2017):** The Jensen-Shannon divergence (implicit in the original GAN loss) behaves poorly when the real and generated distributions have non-overlapping support (which is almost always the case in high dimensions). The gradient is either zero or undefined.
 
-**Wasserstein distance (Earth Mover's distance):** Intuitively, it measures the minimum "work" to transform one distribution into another. Think of it as: if p_data and p_G are piles of dirt, how much dirt do you need to move and how far?
+**Wasserstein distance (Earth Mover's distance):** Intuitively, it measures the minimum "work" to transform one distribution into another. Think of it as: if $p_{\text{data}}$ and $p_G$ are piles of dirt, how much dirt do you need to move and how far?
 
 **Why it is better:** Wasserstein distance provides meaningful gradients even when distributions don't overlap. It decreases smoothly as G improves, giving a useful training signal throughout.
 
 **The WGAN objective:**
 
-    min_G max_{D in 1-Lipschitz} E_{x~p_data}[D(x)] - E_{z~p(z)}[D(G(z))]
+$$\min_G \max_{D \in \text{1-Lipschitz}} \mathbb{E}_{x \sim p_{\text{data}}}[D(x)] - \mathbb{E}_{z \sim p(z)}[D(G(z))]$$
 
 The discriminator (now called "critic") must be 1-Lipschitz: its gradient norm must be at most 1 everywhere.
 
 **Enforcing Lipschitz constraint — gradient penalty (WGAN-GP):**
 
-    L_D = E_{z~p(z)}[D(G(z))] - E_{x~p_data}[D(x)] + lambda * E_{x_hat}[(||grad D(x_hat)||_2 - 1)^2]
+$$\mathcal{L}_D = \mathbb{E}_{z \sim p(z)}[D(G(z))] - \mathbb{E}_{x \sim p_{\text{data}}}[D(x)] + \lambda \, \mathbb{E}_{\hat{x}}\left[(\|\nabla_{\hat{x}} D(\hat{x})\|_2 - 1)^2\right]$$
 
-where x_hat is a random interpolation between a real and fake sample. This penalty forces the gradient norm to be close to 1, enforcing the Lipschitz constraint.
+where $\hat{x}$ is a random interpolation between a real and fake sample. This penalty forces the gradient norm to be close to 1, enforcing the Lipschitz constraint.
 
 **Derivation walkthrough:** Show why the Lipschitz constraint is needed (Kantorovich-Rubinstein duality), why weight clipping (original WGAN) is problematic, and why the gradient penalty is preferred.
 
@@ -383,54 +383,56 @@ By the end of this session, the apprentice will be able to:
 
 ### Block 2: The Forward Process (50 min)
 
-**Definition:** Given a data sample x_0, the forward process produces increasingly noisy versions x_1, x_2, ..., x_T by adding Gaussian noise at each step:
+**Definition:** Given a data sample $x_0$, the forward process produces increasingly noisy versions $x_1, x_2, \ldots, x_T$ by adding Gaussian noise at each step:
 
-    q(x_t | x_{t-1}) = N(x_t; sqrt(1 - beta_t) * x_{t-1}, beta_t * I)
+$$q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1 - \beta_t} \cdot x_{t-1}, \beta_t I)$$
 
-where beta_t is a small positive constant (the noise schedule), typically between 0.0001 and 0.02.
+where $\beta_t$ is a small positive constant (the noise schedule), typically between 0.0001 and 0.02.
 
-**What this means:** At each step, we slightly shrink the signal (multiply by sqrt(1 - beta_t)) and add a small amount of noise (variance beta_t). After T steps (typically T = 1000), x_T is indistinguishable from pure Gaussian noise.
+**What this means:** At each step, we slightly shrink the signal (multiply by $\sqrt{1 - \beta_t}$) and add a small amount of noise (variance $\beta_t$). After $T$ steps (typically $T = 1000$), $x_T$ is indistinguishable from pure Gaussian noise.
 
-**The closed-form shortcut:** Define alpha_t = 1 - beta_t, and alpha_bar_t = product of alpha_1 through alpha_t. Then:
+**The closed-form shortcut:** Define $\alpha_t = 1 - \beta_t$, and $\bar{\alpha}_t = \prod_{s=1}^{t} \alpha_s$. Then:
 
-    q(x_t | x_0) = N(x_t; sqrt(alpha_bar_t) * x_0, (1 - alpha_bar_t) * I)
+$$q(x_t | x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha}_t} \cdot x_0, (1 - \bar{\alpha}_t) I)$$
 
-This means we can jump directly from x_0 to any x_t without computing all intermediate steps:
+This means we can jump directly from $x_0$ to any $x_t$ without computing all intermediate steps:
 
-    x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * epsilon,  epsilon ~ N(0, I)
+$$x_t = \sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)$$
 
 **Derivation walkthrough:** Show this closed form by recursively applying the one-step formula. Use the fact that adding two independent Gaussians gives a Gaussian whose variances add.
 
 **Spend time on the noise schedule:** Linear schedule (original DDPM), cosine schedule (Nichol & Dhariwal, 2021 — reduces the sudden destruction at the end), and why the schedule matters for sample quality.
 
+
+
 ### Block 3: The Reverse Process and Training Objective (40 min)
 
-**The reverse process:** We want to learn p_theta(x_{t-1} | x_t) — given a noisy image, produce a slightly less noisy image. We parameterize this as a Gaussian:
+**The reverse process:** We want to learn $p_\theta(x_{t-1} | x_t)$ — given a noisy image, produce a slightly less noisy image. We parameterize this as a Gaussian:
 
-    p_theta(x_{t-1} | x_t) = N(x_{t-1}; mu_theta(x_t, t), sigma_t^2 * I)
+$$p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \sigma_t^2 I)$$
 
-The neural network predicts the mean mu_theta. The variance sigma_t^2 is typically fixed to beta_t or (1 - alpha_bar_{t-1})/(1 - alpha_bar_t) * beta_t.
+The neural network predicts the mean $\mu_\theta$. The variance $\sigma_t^2$ is typically fixed to $\beta_t$ or $\frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t} \cdot \beta_t$.
 
-**The noise prediction reformulation (the key insight):** Instead of predicting the mean directly, we reparameterize mu_theta in terms of the predicted noise:
+**The noise prediction reformulation (the key insight):** Instead of predicting the mean directly, we reparameterize $\mu_\theta$ in terms of the predicted noise:
 
-    mu_theta(x_t, t) = (1 / sqrt(alpha_t)) * (x_t - (beta_t / sqrt(1 - alpha_bar_t)) * epsilon_theta(x_t, t))
+$$\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(x_t, t) \right)$$
 
-where epsilon_theta is the neural network that predicts the noise that was added.
+where $\epsilon_\theta$ is the neural network that predicts the noise that was added.
 
 **The simplified training objective:** The full variational bound simplifies to:
 
-    L_simple = E_{t, x_0, epsilon}[|| epsilon - epsilon_theta(x_t, t) ||^2]
+$$\mathcal{L}_{\text{simple}} = \mathbb{E}_{t, x_0, \epsilon}\left[\| \epsilon - \epsilon_\theta(x_t, t) \|^2\right]$$
 
 where:
-- t is uniformly sampled from {1, ..., T}
-- epsilon ~ N(0, I)
-- x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * epsilon
+- $t$ is uniformly sampled from $\{1, \ldots, T\}$
+- $\epsilon \sim \mathcal{N}(0, I)$
+- $x_t = \sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon$
 
 **In plain English:** Sample a training image. Pick a random timestep. Add the appropriate amount of noise. Ask the network to predict what noise was added. Penalize it with MSE.
 
-**Connection to score matching:** The score of a distribution is the gradient of log probability: s(x) = grad_x log p(x). Score matching trains a network to estimate this gradient. It turns out that predicting the noise epsilon is equivalent to predicting the score (up to a scaling factor):
+**Connection to score matching:** The score of a distribution is the gradient of log probability: $s(x) = \nabla_x \log p(x)$. Score matching trains a network to estimate this gradient. It turns out that predicting the noise $\epsilon$ is equivalent to predicting the score (up to a scaling factor):
 
-    epsilon_theta(x_t, t) is proportional to -s_theta(x_t, t)
+$$\epsilon_\theta(x_t, t) \propto -s_\theta(x_t, t)$$
 
 This connection, established by Song et al., unifies the diffusion and score-matching perspectives.
 
@@ -461,11 +463,11 @@ This requires T forward passes of the network (typically 1000). Each step remove
 
 The idea: train the same model both conditionally and unconditionally (randomly drop the conditioning signal during training). At inference time, extrapolate away from the unconditional prediction:
 
-    epsilon_guided = epsilon_unconditional + w * (epsilon_conditional - epsilon_unconditional)
+$$\epsilon_{\text{guided}} = \epsilon_{\text{unconditional}} + w \cdot (\epsilon_{\text{conditional}} - \epsilon_{\text{unconditional}})$$
 
-where w > 1 amplifies the effect of the conditioning. This dramatically improves sample quality and is used in essentially every modern diffusion system (DALL-E 2, Stable Diffusion, Imagen).
+where $w > 1$ amplifies the effect of the conditioning. This dramatically improves sample quality and is used in essentially every modern diffusion system (DALL-E 2, Stable Diffusion, Imagen).
 
-**The U-Net backbone:** The denoising network epsilon_theta is typically a U-Net:
+**The U-Net backbone:** The denoising network $\epsilon_\theta$ is typically a U-Net:
 - Encoder path with downsampling (captures context)
 - Decoder path with upsampling (produces full-resolution output)
 - Skip connections (preserves spatial detail)
@@ -519,9 +521,9 @@ def train_step(model, x_0, optimizer):
 
 | Concept | Key Idea | Core Math |
 |---------|----------|-----------|
-| VAE | Encode to a distribution, regularize toward prior | ELBO = E[log p(x\|z)] - KL(q(z\|x) \|\| p(z)) |
-| GAN | Adversarial game between generator and discriminator | min_G max_D E[log D(x)] + E[log(1-D(G(z)))] |
-| Diffusion | Learn to reverse a gradual noising process | L = E[\|\| epsilon - epsilon_theta(x_t, t) \|\|^2] |
+| VAE | Encode to a distribution, regularize toward prior | $\text{ELBO} = \mathbb{E}[\log p(x\|z)] - D_{KL}(q(z\|x) \| p(z))$ |
+| GAN | Adversarial game between generator and discriminator | $\min_G \max_D \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1-D(G(z)))]$ |
+| Diffusion | Learn to reverse a gradual noising process | $\mathcal{L} = \mathbb{E}[\| \epsilon - \epsilon_\theta(x_t, t) \|^2]$ |
 
 **The progression:** VAEs (2013) gave us a principled but blurry generative model. GANs (2014) gave us sharp images but unstable training. Diffusion models (2020) gave us both quality and stability, at the cost of slow sampling. Understanding all three is essential — each reveals different aspects of the generative modeling problem, and ideas from all three continue to influence current research.
 

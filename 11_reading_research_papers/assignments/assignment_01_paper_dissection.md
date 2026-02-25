@@ -55,7 +55,7 @@ argument flow. As you read, answer:
 Now go deep. Re-read the paper with the goal of being able to reconstruct every technical
 detail from scratch:
 
-1. Re-derive the scaled dot-product attention formula. Why scale by 1/sqrt(d_k)? What happens
+1. Re-derive the scaled dot-product attention formula. Why scale by $1/\sqrt{d_k}$? What happens
    without scaling? (The paper gives a specific argument — find it and evaluate it.)
 2. Explain multi-head attention. Why is it better than single-head attention with the same
    total dimension? What does each head learn?

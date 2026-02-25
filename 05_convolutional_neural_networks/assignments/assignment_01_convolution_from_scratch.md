@@ -171,25 +171,23 @@ def conv2d_backward(d_output, input, weight, stride=1, padding=0):
 The gradient computations for a convolution layer:
 
 **Gradient w.r.t. bias:**
-```
-d_bias[c_out] = sum over (n, h, w) of d_output[n, c_out, h, w]
-```
+
+$$\frac{\partial \mathcal{L}}{\partial b_{c_{out}}} = \sum_{n, h, w} \frac{\partial \mathcal{L}}{\partial \text{output}}[n, c_{out}, h, w]$$
+
 This is straightforward: the bias adds to every spatial position, so its gradient is the
 sum over all positions.
 
 **Gradient w.r.t. weights:**
-```
-d_weight[c_out, c_in, m, n] = sum over (batch, h, w) of
-    d_output[batch, c_out, h, w] * input_padded[batch, c_in, h*s+m, w*s+n]
-```
+
+$$\frac{\partial \mathcal{L}}{\partial W[c_{out}, c_{in}, m, n]} = \sum_{\text{batch}, h, w} \frac{\partial \mathcal{L}}{\partial \text{output}}[\text{batch}, c_{out}, h, w] \cdot \text{input\_padded}[\text{batch}, c_{in}, h \cdot s+m, w \cdot s+n]$$
+
 This is a convolution of the input with d_output.
 
 **Gradient w.r.t. input:**
-```
-d_input is a "full" convolution of d_output with the flipped weight.
+
+$\frac{\partial \mathcal{L}}{\partial \text{input}}$ is a "full" convolution of d_output with the flipped weight.
 For each position in d_input, accumulate contributions from all output positions
 whose receptive field includes that input position.
-```
 This is the trickiest part. Think about it carefully: each input element contributes to
 multiple output elements (all the output positions whose kernel window overlaps with that
 input position). The gradient flows back from all those output positions.

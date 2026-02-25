@@ -255,91 +255,91 @@ uses non-standard notation, build a custom table for that paper.
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| theta | theta | Model parameters (all weights and biases) | `model.parameters()` |
-| W | weight matrix | Linear transformation weights | `nn.Linear(in, out).weight` |
-| b | bias vector | Additive bias term | `nn.Linear(in, out).bias` |
-| x | input | Input data or features | `x` (tensor) |
-| y | target/label | Ground truth labels | `y` (tensor) |
-| y_hat, f(x) | prediction | Model output | `model(x)` |
-| h | hidden state | Hidden representation | intermediate tensor |
-| z | latent variable | Latent representation (in generative models) | `z = encoder(x)` |
-| a | activation | Pre or post activation value | intermediate tensor |
-| d | dimension | Dimensionality of a vector or space | `x.shape[-1]` |
-| N, n | count | Number of samples, features, etc. | `len(dataset)` |
-| B | batch size | Number of samples per batch | `batch_size` |
-| T | sequence length | Number of time steps | `seq_len` |
+| $\theta$ | theta | Model parameters (all weights and biases) | `model.parameters()` |
+| $W$ | weight matrix | Linear transformation weights | `nn.Linear(in, out).weight` |
+| $b$ | bias vector | Additive bias term | `nn.Linear(in, out).bias` |
+| $x$ | input | Input data or features | `x` (tensor) |
+| $y$ | target/label | Ground truth labels | `y` (tensor) |
+| $\hat{y}$, $f(x)$ | prediction | Model output | `model(x)` |
+| $h$ | hidden state | Hidden representation | intermediate tensor |
+| $z$ | latent variable | Latent representation (in generative models) | `z = encoder(x)` |
+| $a$ | activation | Pre or post activation value | intermediate tensor |
+| $d$ | dimension | Dimensionality of a vector or space | `x.shape[-1]` |
+| $N$, $n$ | count | Number of samples, features, etc. | `len(dataset)` |
+| $B$ | batch size | Number of samples per batch | `batch_size` |
+| $T$ | sequence length | Number of time steps | `seq_len` |
 
 ### Loss Functions and Optimization
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| L | loss | Loss function value | `loss = criterion(y_hat, y)` |
-| J(theta) | cost function | Average loss over dataset | `loss.mean()` |
-| nabla | nabla/del | Gradient operator | `loss.backward()` |
-| nabla_theta L | gradient of L w.r.t. theta | Parameter gradients | `param.grad` |
-| partial L / partial w | partial derivative | Gradient w.r.t. specific parameter | `w.grad` |
-| eta, alpha | learning rate | Step size for gradient descent | `lr` in optimizer |
-| lambda | regularization coeff. | Weight decay or penalty strength | `weight_decay` in optimizer |
-| argmin_theta | argmin | Value of theta that minimizes | `optimizer.step()` (iterative) |
-| argmax_theta | argmax | Value of theta that maximizes | same, with negated loss |
+| $\mathcal{L}$ | loss | Loss function value | `loss = criterion(y_hat, y)` |
+| $J(\theta)$ | cost function | Average loss over dataset | `loss.mean()` |
+| $\nabla$ | nabla/del | Gradient operator | `loss.backward()` |
+| $\nabla_\theta \mathcal{L}$ | gradient of $\mathcal{L}$ w.r.t. $\theta$ | Parameter gradients | `param.grad` |
+| $\frac{\partial \mathcal{L}}{\partial w}$ | partial derivative | Gradient w.r.t. specific parameter | `w.grad` |
+| $\eta$, $\alpha$ | learning rate | Step size for gradient descent | `lr` in optimizer |
+| $\lambda$ | regularization coeff. | Weight decay or penalty strength | `weight_decay` in optimizer |
+| $\arg\min_\theta$ | argmin | Value of $\theta$ that minimizes | `optimizer.step()` (iterative) |
+| $\arg\max_\theta$ | argmax | Value of $\theta$ that maximizes | same, with negated loss |
 
 ### Probability and Statistics
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| P(x), p(x) | probability | Probability of x | `torch.distributions` |
-| P(y\|x) | conditional prob. | Probability of y given x | `model(x)` (after softmax) |
-| E[x], E_p[x] | expectation | Expected value of x under p | `x.mean()` (empirical) |
-| Var(x) | variance | Variance of x | `x.var()` |
-| sigma | sigma | Standard deviation or sigmoid | `x.std()` or `torch.sigmoid(x)` |
-| mu | mu | Mean | `x.mean()` |
-| N(mu, sigma^2) | normal dist. | Gaussian distribution | `torch.randn(shape) * sigma + mu` |
-| KL(p \|\| q) | KL divergence | Divergence between distributions | `F.kl_div(q.log(), p)` |
-| H(p) | entropy | Shannon entropy | `-(p * p.log()).sum()` |
-| log p(x) | log-likelihood | Log of probability | `dist.log_prob(x)` |
-| prod | product | Product over terms | `torch.prod(x)` |
-| sum | summation | Sum over terms | `torch.sum(x)` or `x.sum()` |
+| $P(x)$, $p(x)$ | probability | Probability of $x$ | `torch.distributions` |
+| $P(y \mid x)$ | conditional prob. | Probability of $y$ given $x$ | `model(x)` (after softmax) |
+| $\mathbb{E}[x]$, $\mathbb{E}_p[x]$ | expectation | Expected value of $x$ under $p$ | `x.mean()` (empirical) |
+| $\text{Var}(x)$ | variance | Variance of $x$ | `x.var()` |
+| $\sigma$ | sigma | Standard deviation or sigmoid | `x.std()` or `torch.sigmoid(x)` |
+| $\mu$ | mu | Mean | `x.mean()` |
+| $\mathcal{N}(\mu, \sigma^2)$ | normal dist. | Gaussian distribution | `torch.randn(shape) * sigma + mu` |
+| $D_{\text{KL}}(p \| q)$ | KL divergence | Divergence between distributions | `F.kl_div(q.log(), p)` |
+| $H(p)$ | entropy | Shannon entropy | `-(p * p.log()).sum()` |
+| $\log p(x)$ | log-likelihood | Log of probability | `dist.log_prob(x)` |
+| $\prod$ | product | Product over terms | `torch.prod(x)` |
+| $\sum$ | summation | Sum over terms | `torch.sum(x)` or `x.sum()` |
 
 ### Linear Algebra
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| \|\|x\|\|, \|\|x\|\|_2 | L2 norm | Euclidean norm | `torch.norm(x)` or `x.norm()` |
-| \|\|x\|\|_1 | L1 norm | Sum of absolute values | `x.abs().sum()` |
-| \|\|x\|\|_F | Frobenius norm | Matrix norm | `torch.norm(x, 'fro')` |
-| x^T | transpose | Transpose of x | `x.T` or `x.transpose(-2,-1)` |
-| x . y, x^T y | dot product | Inner product | `torch.dot(x, y)` or `x @ y` |
-| X @ W | matrix multiply | Matrix multiplication | `torch.matmul(X, W)` or `X @ W` |
-| diag(x) | diagonal | Diagonal matrix from vector | `torch.diag(x)` |
-| I | identity | Identity matrix | `torch.eye(n)` |
-| det(A) | determinant | Matrix determinant | `torch.det(A)` |
-| tr(A) | trace | Sum of diagonal elements | `torch.trace(A)` |
-| x (circle-times) y | element-wise product | Hadamard product | `x * y` |
-| x (circle-plus) y | element-wise sum | (less common) element-wise add | `x + y` |
+| $\|x\|$, $\|x\|_2$ | L2 norm | Euclidean norm | `torch.norm(x)` or `x.norm()` |
+| $\|x\|_1$ | L1 norm | Sum of absolute values | `x.abs().sum()` |
+| $\|x\|_F$ | Frobenius norm | Matrix norm | `torch.norm(x, 'fro')` |
+| $x^T$ | transpose | Transpose of $x$ | `x.T` or `x.transpose(-2,-1)` |
+| $x \cdot y$, $x^T y$ | dot product | Inner product | `torch.dot(x, y)` or `x @ y` |
+| $X W$ | matrix multiply | Matrix multiplication | `torch.matmul(X, W)` or `X @ W` |
+| $\text{diag}(x)$ | diagonal | Diagonal matrix from vector | `torch.diag(x)` |
+| $I$ | identity | Identity matrix | `torch.eye(n)` |
+| $\det(A)$ | determinant | Matrix determinant | `torch.det(A)` |
+| $\text{tr}(A)$ | trace | Sum of diagonal elements | `torch.trace(A)` |
+| $x \odot y$ | element-wise product | Hadamard product | `x * y` |
+| $x \oplus y$ | element-wise sum | (less common) element-wise add | `x + y` |
 
 ### Common Functions
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| sigma(x) | sigmoid | 1/(1+exp(-x)) | `torch.sigmoid(x)` |
-| tanh(x) | tanh | Hyperbolic tangent | `torch.tanh(x)` |
-| ReLU(x) | ReLU | max(0, x) | `F.relu(x)` |
-| softmax(x)_i | softmax | exp(x_i) / sum(exp(x_j)) | `F.softmax(x, dim=-1)` |
-| log softmax(x) | log softmax | Numerically stable log(softmax) | `F.log_softmax(x, dim=-1)` |
-| 1[condition] | indicator | 1 if condition true, else 0 | `(condition).float()` |
-| \|\|x - y\|\|^2 | squared distance | Squared Euclidean distance | `((x - y) ** 2).sum()` |
-| max(0, m - s) | hinge | Hinge loss component | `F.relu(m - s)` |
+| $\sigma(x)$ | sigmoid | $\frac{1}{1+e^{-x}}$ | `torch.sigmoid(x)` |
+| $\tanh(x)$ | tanh | Hyperbolic tangent | `torch.tanh(x)` |
+| $\text{ReLU}(x)$ | ReLU | $\max(0, x)$ | `F.relu(x)` |
+| $\text{softmax}(x)_i$ | softmax | $\frac{e^{x_i}}{\sum_j e^{x_j}}$ | `F.softmax(x, dim=-1)` |
+| $\log \text{softmax}(x)$ | log softmax | Numerically stable $\log(\text{softmax})$ | `F.log_softmax(x, dim=-1)` |
+| $\mathbb{1}[\text{condition}]$ | indicator | 1 if condition true, else 0 | `(condition).float()` |
+| $\|x - y\|^2$ | squared distance | Squared Euclidean distance | `((x - y) ** 2).sum()` |
+| $\max(0, m - s)$ | hinge | Hinge loss component | `F.relu(m - s)` |
 
 ### Attention and Transformer Notation
 
 | Symbol | Name | Meaning | PyTorch Equivalent |
 |--------|------|---------|-------------------|
-| Q | queries | Query matrix | `Q = x @ W_Q` |
-| K | keys | Key matrix | `K = x @ W_K` |
-| V | values | Value matrix | `V = x @ W_V` |
-| d_k | key dimension | Dimension of key vectors | `d_k = K.shape[-1]` |
-| d_model | model dimension | Hidden size of transformer | `d_model` (config) |
-| Attention(Q,K,V) | scaled dot-product | softmax(QK^T/sqrt(d_k))V | See implementation below |
+| $Q$ | queries | Query matrix | `Q = x @ W_Q` |
+| $K$ | keys | Key matrix | `K = x @ W_K` |
+| $V$ | values | Value matrix | `V = x @ W_V` |
+| $d_k$ | key dimension | Dimension of key vectors | `d_k = K.shape[-1]` |
+| $d_{\text{model}}$ | model dimension | Hidden size of transformer | `d_model` (config) |
+| $\text{Attention}(Q,K,V)$ | scaled dot-product | $\text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V$ | See implementation below |
 | MultiHead | multi-head attention | Concatenated attention heads | `nn.MultiheadAttention` |
 | PE | positional encoding | Position information | Sinusoidal or learned |
 | [CLS] | classification token | Special token for classification | `cls_token` |
@@ -349,13 +349,13 @@ uses non-standard notation, build a custom table for that paper.
 
 | Notation | Meaning | Example |
 |----------|---------|---------|
-| x_i | i-th element of x | `x[i]` |
-| x^(t) | x at time step or iteration t | `x_t` (in code) |
-| x^(l) | x at layer l | `layer_outputs[l]` |
-| W_{ij} | Weight from neuron j to neuron i | `W[i, j]` |
-| theta_t | Parameters at optimization step t | `optimizer.param_groups` |
-| h_t | Hidden state at time t | `hidden_states[t]` |
-| x_{1:T} | Sequence from position 1 to T | `x[:, :T]` (batch first) |
+| $x_i$ | $i$-th element of $x$ | `x[i]` |
+| $x^{(t)}$ | $x$ at time step or iteration $t$ | `x_t` (in code) |
+| $x^{(l)}$ | $x$ at layer $l$ | `layer_outputs[l]` |
+| $W_{ij}$ | Weight from neuron $j$ to neuron $i$ | `W[i, j]` |
+| $\theta_t$ | Parameters at optimization step $t$ | `optimizer.param_groups` |
+| $h_t$ | Hidden state at time $t$ | `hidden_states[t]` |
+| $x_{1:T}$ | Sequence from position 1 to $T$ | `x[:, :T]` (batch first) |
 
 ### Key Identities to Know
 

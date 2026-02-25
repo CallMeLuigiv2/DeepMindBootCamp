@@ -28,10 +28,10 @@ By the end of this session, the apprentice will:
 ### Outline
 
 #### Part 1: The Single Neuron (30 min)
-- A neuron computes: z = w^T x + b, then a = sigma(z).
+- A neuron computes: $z = \mathbf{w}^T \mathbf{x} + b$, then $a = \sigma(z)$.
 - Geometrically: w defines a hyperplane in input space, b shifts it.
 - Whiteboard derivation: draw the decision boundary for a 2D perceptron with specific weights.
-  - Example: w = [2, -1], b = 0.5. Draw the line 2x1 - x2 + 0.5 = 0.
+  - Example: $\mathbf{w} = [2, -1]$, $b = 0.5$. Draw the line $2x_1 - x_2 + 0.5 = 0$.
   - Show which side is "class 1" depending on the activation function.
 - The XOR problem: why a single neuron cannot solve it. Draw it. This is not a curiosity — it
   is the fundamental reason we need depth.
@@ -41,12 +41,12 @@ By the end of this session, the apprentice will:
 
 | Function | Formula | Derivative | Range | Why It Was Invented |
 |----------|---------|-----------|-------|---------------------|
-| Sigmoid | 1/(1+e^{-z}) | sigma(1-sigma) | (0,1) | Biological plausibility, smooth step |
-| Tanh | (e^z - e^{-z})/(e^z + e^{-z}) | 1 - tanh^2(z) | (-1,1) | Zero-centered outputs fix slow convergence |
-| ReLU | max(0,z) | 0 if z<0, 1 if z>0 | [0,inf) | Sparse activation, no vanishing gradient for z>0 |
-| LeakyReLU | max(alpha*z, z) | alpha if z<0, 1 if z>0 | (-inf,inf) | Fix "dead neuron" problem of ReLU |
-| GELU | z * Phi(z) | Phi(z) + z*phi(z) | approx (-0.17, inf) | Stochastic regularization built into activation |
-| Swish | z * sigmoid(z) | swish(z) + sigmoid(z)(1-swish(z)) | approx (-0.28, inf) | Discovered via NAS, smooth non-monotonic |
+| Sigmoid | $\frac{1}{1+e^{-z}}$ | $\sigma(1-\sigma)$ | $(0,1)$ | Biological plausibility, smooth step |
+| Tanh | $\frac{e^z - e^{-z}}{e^z + e^{-z}}$ | $1 - \tanh^2(z)$ | $(-1,1)$ | Zero-centered outputs fix slow convergence |
+| ReLU | $\max(0,z)$ | $0$ if $z<0$, $1$ if $z>0$ | $[0,\infty)$ | Sparse activation, no vanishing gradient for $z>0$ |
+| LeakyReLU | $\max(\alpha z, z)$ | $\alpha$ if $z<0$, $1$ if $z>0$ | $(-\infty,\infty)$ | Fix "dead neuron" problem of ReLU |
+| GELU | $z \cdot \Phi(z)$ | $\Phi(z) + z \cdot \phi(z)$ | $\approx(-0.17, \infty)$ | Stochastic regularization built into activation |
+| Swish | $z \cdot \sigma(z)$ | $\text{swish}(z) + \sigma(z)(1-\text{swish}(z))$ | $\approx(-0.28, \infty)$ | Discovered via NAS, smooth non-monotonic |
 
 - The historical arc: sigmoid dominated (1980s-2000s) -> tanh was better (zero-centered) ->
   ReLU changed everything (2010, Nair & Hinton) -> variants fixed ReLU's problems ->
@@ -55,7 +55,7 @@ By the end of this session, the apprentice will:
 
 #### Part 3: Universal Approximation Theorem (20 min)
 - Statement: A feedforward network with a single hidden layer containing a finite number of
-  neurons can approximate any continuous function on compact subsets of R^n to arbitrary
+  neurons can approximate any continuous function on compact subsets of $\mathbb{R}^n$ to arbitrary
   accuracy, given a non-polynomial activation function.
 - What this MEANS: MLPs are expressive enough. In principle.
 - What this DOES NOT MEAN:
@@ -122,30 +122,30 @@ use it as a black box. We will derive every gradient by hand.
   - z3 = W3 @ a2 + b3
   - y_hat = softmax(z3)
   - L = cross_entropy(y_hat, y)
-- This is just: L = f6(f5(f4(f3(f2(f1(x))))))
+- This is just: $L = f_6(f_5(f_4(f_3(f_2(f_1(\mathbf{x}))))))$
 - Draw the computational graph explicitly on the whiteboard.
 
 #### Part 2: Backward Pass — Full Derivation (50 min)
 - Whiteboard derivation with CONCRETE dimensions:
-  - Input: x in R^784 (MNIST)
-  - Layer 1: W1 in R^{128x784}, b1 in R^128
-  - Layer 2: W2 in R^{64x128}, b2 in R^64
-  - Layer 3: W3 in R^{10x64}, b3 in R^10
-- Derive dL/dz3 = y_hat - y (for softmax + cross-entropy).
-- Then: dL/dW3 = dL/dz3 @ a2^T (outer product).
-- Then: dL/db3 = dL/dz3.
-- Then: dL/da2 = W3^T @ dL/dz3.
-- Then: dL/dz2 = dL/da2 * relu'(z2) (element-wise).
+  - Input: $\mathbf{x} \in \mathbb{R}^{784}$ (MNIST)
+  - Layer 1: $W_1 \in \mathbb{R}^{128 \times 784}$, $\mathbf{b}_1 \in \mathbb{R}^{128}$
+  - Layer 2: $W_2 \in \mathbb{R}^{64 \times 128}$, $\mathbf{b}_2 \in \mathbb{R}^{64}$
+  - Layer 3: $W_3 \in \mathbb{R}^{10 \times 64}$, $\mathbf{b}_3 \in \mathbb{R}^{10}$
+- Derive $\frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} = \hat{\mathbf{y}} - \mathbf{y}$ (for softmax + cross-entropy).
+- Then: $\frac{\partial \mathcal{L}}{\partial W_3} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} \mathbf{a}_2^T$ (outer product).
+- Then: $\frac{\partial \mathcal{L}}{\partial \mathbf{b}_3} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3}$.
+- Then: $\frac{\partial \mathcal{L}}{\partial \mathbf{a}_2} = W_3^T \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3}$.
+- Then: $\frac{\partial \mathcal{L}}{\partial \mathbf{z}_2} = \frac{\partial \mathcal{L}}{\partial \mathbf{a}_2} \odot \text{relu}'(\mathbf{z}_2)$ (element-wise).
 - Continue recursively.
 - Write every single step. Use specific numbers for a mini-example (2-2-1 network) to
   verify understanding.
 
 #### Part 3: The Jacobian Perspective (20 min)
 - Each layer's backward pass computes a vector-Jacobian product (VJP).
-- The Jacobian of layer i: J_i = da_i/dz_i * dz_i/da_{i-1} = diag(sigma'(z_i)) @ W_i.
+- The Jacobian of layer $i$: $J_i = \frac{\partial \mathbf{a}_i}{\partial \mathbf{z}_i} \cdot \frac{\partial \mathbf{z}_i}{\partial \mathbf{a}_{i-1}} = \text{diag}(\sigma'(\mathbf{z}_i)) \cdot W_i$.
 - Total gradient: product of all Jacobians from output to input.
-- This is why understanding matrix norms matters: if ||J_i|| > 1 for many layers, gradients
-  explode. If ||J_i|| < 1 for many layers, gradients vanish.
+- This is why understanding matrix norms matters: if $\|J_i\| > 1$ for many layers, gradients
+  explode. If $\|J_i\| < 1$ for many layers, gradients vanish.
 
 #### Part 4: Computational Efficiency (15 min)
 - Numerical differentiation: perturb each parameter, recompute loss. For N parameters,
@@ -156,12 +156,12 @@ use it as a black box. We will derive every gradient by hand.
 
 #### Part 5: Vanishing and Exploding Gradients (35 min)
 - The mathematical argument:
-  - dL/dx = (product of J_i for i=1..L) @ dL/da_L
-  - If each ||J_i|| ~ r, then ||dL/dx|| ~ r^L.
-  - r < 1: vanishing (exponentially). r > 1: exploding (exponentially).
-- With sigmoid: sigmoid'(z) in (0, 0.25]. So max gradient per layer is 0.25 * ||W_i||.
-  Unless ||W_i|| > 4, gradients shrink every layer.
-- With ReLU: relu'(z) in {0, 1}. No shrinkage for active neurons. But dead neurons contribute
+  - $\frac{\partial \mathcal{L}}{\partial \mathbf{x}} = \left(\prod_{i=1}^{L} J_i\right) \frac{\partial \mathcal{L}}{\partial \mathbf{a}_L}$
+  - If each $\|J_i\| \sim r$, then $\left\|\frac{\partial \mathcal{L}}{\partial \mathbf{x}}\right\| \sim r^L$.
+  - $r < 1$: vanishing (exponentially). $r > 1$: exploding (exponentially).
+- With sigmoid: $\sigma'(z) \in (0, 0.25]$. So max gradient per layer is $0.25 \cdot \|W_i\|$.
+  Unless $\|W_i\| > 4$, gradients shrink every layer.
+- With ReLU: $\text{relu}'(z) \in \{0, 1\}$. No shrinkage for active neurons. But dead neurons contribute
   zero gradient permanently.
 - This drove 15 years of research:
   - Better activations (ReLU, 2010)
@@ -210,27 +210,27 @@ use it as a black box. We will derive every gradient by hand.
 - Demonstrate with code: train a 3-layer MLP with zero init. Show it does not learn.
 
 #### Part 2: Why Random Isn't Enough (15 min)
-- Too small (e.g., N(0, 0.001)): activations shrink to zero layer by layer. Gradients vanish.
-- Too large (e.g., N(0, 1)): activations saturate. Gradients also vanish (for sigmoid/tanh)
+- Too small (e.g., $\mathcal{N}(0, 0.001)$): activations shrink to zero layer by layer. Gradients vanish.
+- Too large (e.g., $\mathcal{N}(0, 1)$): activations saturate. Gradients also vanish (for sigmoid/tanh)
   or explode (for ReLU).
 - The Goldilocks problem: we need the VARIANCE to be just right.
 
 #### Part 3: Xavier/Glorot Initialization — Full Derivation (30 min)
 - Goal: keep the variance of activations constant across layers.
-- For layer i: z_i = W_i @ a_{i-1}.
-- Var(z_i) = n_{i-1} * Var(W_i) * Var(a_{i-1}).
+- For layer $i$: $\mathbf{z}_i = W_i \mathbf{a}_{i-1}$.
+- $\text{Var}(z_i) = n_{i-1} \cdot \text{Var}(W_i) \cdot \text{Var}(a_{i-1})$.
   (Assumes inputs and weights are independent, zero-mean.)
-- For Var(z_i) = Var(a_{i-1}), we need Var(W_i) = 1/n_{i-1}.
-- For the backward pass: we similarly need Var(W_i) = 1/n_i.
-- Compromise: Var(W_i) = 2/(n_{i-1} + n_i).
-- Xavier initialization: W ~ N(0, 2/(n_in + n_out)) or U(-sqrt(6/(n_in+n_out)), sqrt(6/(n_in+n_out))).
+- For $\text{Var}(z_i) = \text{Var}(a_{i-1})$, we need $\text{Var}(W_i) = 1/n_{i-1}$.
+- For the backward pass: we similarly need $\text{Var}(W_i) = 1/n_i$.
+- Compromise: $\text{Var}(W_i) = \frac{2}{n_{i-1} + n_i}$.
+- Xavier initialization: $W \sim \mathcal{N}\!\left(0, \frac{2}{n_{\text{in}} + n_{\text{out}}}\right)$ or $\mathcal{U}\!\left(-\sqrt{\frac{6}{n_{\text{in}}+n_{\text{out}}}},\; \sqrt{\frac{6}{n_{\text{in}}+n_{\text{out}}}}\right)$.
 - This assumes linear or tanh activation (derivative near 1 at initialization).
 
 #### Part 4: Kaiming/He Initialization — For ReLU (20 min)
-- ReLU zeros out half the activations. Var(relu(z)) = Var(z)/2.
-- Correcting: Var(W_i) = 2/n_{i-1}.
-- He initialization: W ~ N(0, 2/n_in).
-- For LeakyReLU with slope alpha: Var(W_i) = 2/((1+alpha^2) * n_{i-1}).
+- ReLU zeros out half the activations. $\text{Var}(\text{relu}(z)) = \text{Var}(z)/2$.
+- Correcting: $\text{Var}(W_i) = 2/n_{i-1}$.
+- He initialization: $W \sim \mathcal{N}(0, 2/n_{\text{in}})$.
+- For LeakyReLU with slope $\alpha$: $\text{Var}(W_i) = \frac{2}{(1+\alpha^2) \cdot n_{i-1}}$.
 - Whiteboard: show variance propagation through 10 layers with Xavier vs He for ReLU network.
 
 #### Part 5: LSUV — Layer-Sequential Unit Variance (10 min)
@@ -290,13 +290,13 @@ use it as a black box. We will derive every gradient by hand.
 - The fundamental tension: expressiveness vs generalization.
 
 #### Part 2: L1 and L2 Regularization (25 min)
-- L2 (weight decay): L_total = L_data + (lambda/2) * sum(w^2).
-  - Gradient: dL/dw += lambda * w.
+- L2 (weight decay): $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{data}} + \frac{\lambda}{2} \sum w^2$.
+  - Gradient: $\frac{\partial \mathcal{L}}{\partial w} \mathrel{+}= \lambda w$.
   - Effect: pulls weights toward zero. Larger weights are penalized more.
   - Bayesian interpretation: Gaussian prior on weights.
-  - In practice: lambda = 1e-4 to 1e-2 is typical.
-- L1 regularization: L_total = L_data + lambda * sum(|w|).
-  - Gradient: dL/dw += lambda * sign(w).
+  - In practice: $\lambda = 10^{-4}$ to $10^{-2}$ is typical.
+- L1 regularization: $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{data}} + \lambda \sum |w|$.
+  - Gradient: $\frac{\partial \mathcal{L}}{\partial w} \mathrel{+}= \lambda \cdot \text{sign}(w)$.
   - Effect: drives weights to exactly zero. Produces sparse networks.
   - Bayesian interpretation: Laplace prior on weights.
 - L2 vs L1: L2 shrinks all weights, L1 prunes. L2 is almost always preferred for neural nets.
@@ -307,7 +307,7 @@ use it as a black box. We will derive every gradient by hand.
 - During training: randomly set each neuron's output to zero with probability p.
 - The ensemble interpretation: training 2^n different subnetworks (one per dropout mask).
   At test time, we approximate the ensemble average.
-- Inverted dropout: scale activations by 1/(1-p) during training so test time needs no change.
+- Inverted dropout: scale activations by $1/(1-p)$ during training so test time needs no change.
 - Whiteboard: derive the expected value of a neuron's output with inverted dropout.
 - Spatial dropout: for CNNs, drop entire feature maps instead of individual neurons.
   - Why: adjacent pixels are correlated, so standard dropout is ineffective.
@@ -318,11 +318,11 @@ use it as a black box. We will derive every gradient by hand.
 
 #### Part 4: Batch Normalization (30 min)
 - Forward pass (training):
-  1. Compute batch mean: mu_B = (1/m) * sum(x_i).
-  2. Compute batch variance: sigma^2_B = (1/m) * sum((x_i - mu_B)^2).
-  3. Normalize: x_hat_i = (x_i - mu_B) / sqrt(sigma^2_B + epsilon).
-  4. Scale and shift: y_i = gamma * x_hat_i + beta.
-  - gamma and beta are LEARNABLE parameters.
+  1. Compute batch mean: $\mu_B = \frac{1}{m} \sum_i x_i$.
+  2. Compute batch variance: $\sigma^2_B = \frac{1}{m} \sum_i (x_i - \mu_B)^2$.
+  3. Normalize: $\hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma^2_B + \epsilon}}$.
+  4. Scale and shift: $y_i = \gamma \hat{x}_i + \beta$.
+  - $\gamma$ and $\beta$ are LEARNABLE parameters.
 - Forward pass (evaluation): use running mean and running variance (exponential moving average
   from training).
 - Why gamma and beta? Without them, normalization would force all layers to have N(0,1)
@@ -338,11 +338,11 @@ use it as a black box. We will derive every gradient by hand.
   Batch size matters — small batches mean noisy statistics.
 
 #### Part 5: Layer Normalization and Group Normalization (15 min)
-- LayerNorm: normalize across features (not batch). Used in transformers.
+- **LayerNorm**: normalize across features (not batch). Used in transformers.
   - Advantage: no dependence on batch size. Works for sequence models.
-- GroupNorm: normalize within groups of channels.
+- **GroupNorm**: normalize within groups of channels.
   - Advantage: works with small batch sizes (important for detection, segmentation).
-- InstanceNorm: normalize per channel per sample. Used in style transfer.
+- **InstanceNorm**: normalize per channel per sample. Used in style transfer.
 - Comparison table: what each normalizes over, when to use it.
 
 #### Part 6: Data Augmentation as Regularization (10 min)
@@ -399,12 +399,12 @@ use it as a black box. We will derive every gradient by hand.
 - Visualizing loss landscapes: Li et al. (2018) random 2D projections.
 
 #### Part 2: SGD with Momentum (25 min)
-- Vanilla SGD: theta_{t+1} = theta_t - lr * gradient_t.
+- Vanilla SGD: $\theta_{t+1} = \theta_t - \eta \cdot g_t$.
   - Problem: oscillates in narrow valleys, slow in flat regions.
 - Momentum: the physics analogy.
-  - v_{t+1} = beta * v_t + gradient_t
-  - theta_{t+1} = theta_t - lr * v_{t+1}
-  - beta is typically 0.9 (heavy ball) or 0.99 (very heavy ball).
+  - $v_{t+1} = \beta v_t + g_t$
+  - $\theta_{t+1} = \theta_t - \eta \cdot v_{t+1}$
+  - $\beta$ is typically 0.9 (heavy ball) or 0.99 (very heavy ball).
   - Analogy: a ball rolling down a hill accumulates velocity.
 - Effect: smooths out oscillations, accelerates in consistent gradient directions.
 - Whiteboard derivation: show how momentum helps on a 2D quadratic with different curvatures
@@ -412,29 +412,29 @@ use it as a black box. We will derive every gradient by hand.
 
 #### Part 3: Nesterov Momentum (15 min)
 - "Look ahead" before computing gradient:
-  - v_{t+1} = beta * v_t + gradient(theta_t - lr * beta * v_t)
-  - theta_{t+1} = theta_t - lr * v_{t+1}
+  - $v_{t+1} = \beta v_t + \nabla f(\theta_t - \eta \beta v_t)$
+  - $\theta_{t+1} = \theta_t - \eta \cdot v_{t+1}$
 - Intuition: compute the gradient at the position you are about to be at, not where you are.
 - Slightly better convergence guarantees. Modest practical improvement.
 
 #### Part 4: Adaptive Methods (40 min)
 - **AdaGrad**: accumulate squared gradients, divide learning rate by their square root.
-  - s_t = s_{t-1} + gradient_t^2
-  - theta_{t+1} = theta_t - lr * gradient_t / (sqrt(s_t) + epsilon)
+  - $s_t = s_{t-1} + g_t^2$
+  - $\theta_{t+1} = \theta_t - \eta \cdot g_t / (\sqrt{s_t} + \epsilon)$
   - Problem: learning rate monotonically decreases. Eventually stops learning.
 - **RMSProp**: fix AdaGrad with exponential moving average.
-  - s_t = beta * s_{t-1} + (1-beta) * gradient_t^2
-  - theta_{t+1} = theta_t - lr * gradient_t / (sqrt(s_t) + epsilon)
-  - beta = 0.99 typically.
+  - $s_t = \beta \cdot s_{t-1} + (1-\beta) \cdot g_t^2$
+  - $\theta_{t+1} = \theta_t - \eta \cdot g_t / (\sqrt{s_t} + \epsilon)$
+  - $\beta = 0.99$ typically.
 - **Adam**: combine momentum with RMSProp.
-  - m_t = beta1 * m_{t-1} + (1-beta1) * gradient_t        (first moment)
-  - v_t = beta2 * v_{t-1} + (1-beta2) * gradient_t^2      (second moment)
-  - m_hat_t = m_t / (1 - beta1^t)                          (bias correction)
-  - v_hat_t = v_t / (1 - beta2^t)                          (bias correction)
-  - theta_{t+1} = theta_t - lr * m_hat_t / (sqrt(v_hat_t) + epsilon)
-- Whiteboard: derive the bias correction. At t=0, m_0 = 0. After one step,
-  m_1 = (1-beta1)*g_1. The expected value is (1-beta1)*E[g], not E[g]. Dividing by
-  (1-beta1^t) corrects this. Same for v_t.
+  - $m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t$ (first moment)
+  - $v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2$ (second moment)
+  - $\hat{m}_t = m_t / (1 - \beta_1^t)$ (bias correction)
+  - $\hat{v}_t = v_t / (1 - \beta_2^t)$ (bias correction)
+  - $\theta_{t+1} = \theta_t - \eta \cdot \hat{m}_t / (\sqrt{\hat{v}_t} + \epsilon)$
+- Whiteboard: derive the bias correction. At $t=0$, $m_0 = 0$. After one step,
+  $m_1 = (1-\beta_1)g_1$. The expected value is $(1-\beta_1)\mathbb{E}[g]$, not $\mathbb{E}[g]$. Dividing by
+  $(1-\beta_1^t)$ corrects this. Same for $v_t$.
 - **AdamW**: decouple weight decay from the gradient-based update. Loshchilov & Hutter (2019).
   - Instead of: gradient += lambda * theta (L2 regularization on the loss)
   - Do: theta -= lr * lambda * theta (direct weight decay, separate from Adam update)
@@ -478,7 +478,7 @@ use it as a black box. We will derive every gradient by hand.
 - Adaptive methods (Adam) adapt per-parameter learning rates based on gradient history.
 - Learning rate is the most important hyperparameter. Use a schedule.
 - The optimizer you choose affects not just convergence speed but what solution you find.
-- Default starting point: AdamW with lr=3e-4, cosine schedule with warmup.
+- Default starting point: AdamW with $\eta = 3 \times 10^{-4}$, cosine schedule with warmup.
 
 ---
 

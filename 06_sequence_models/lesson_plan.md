@@ -69,18 +69,19 @@ The insight: give the network a *recurrent connection* — let it pass informati
 - b_h, b_y: biases
 
 Write the equations on the board:
-```
-h_t = tanh(W_xh * x_t + W_hh * h_{t-1} + b_h)
-y_t = W_hy * h_t + b_y
-```
 
-Emphasize: the hidden state h_t is a *compressed summary* of everything the network has seen so far. It is a fixed-size vector trying to encode an arbitrarily long history. This will become a problem.
+$$\begin{aligned}
+h_t &= \tanh(W_{xh}\, x_t + W_{hh}\, h_{t-1} + b_h) \\
+y_t &= W_{hy}\, h_t + b_y
+\end{aligned}$$
+
+Emphasize: the hidden state $h_t$ is a *compressed summary* of everything the network has seen so far. It is a fixed-size vector trying to encode an arbitrarily long history. This will become a problem.
 
 ### Block 3: Backpropagation Through Time (20 min)
 
 BPTT is not a new algorithm. It is standard backpropagation applied to the unrolled computation graph. But unrolling reveals the cost: the computation graph for a sequence of length T is T layers deep.
 
-Derive the gradient of the loss with respect to W_hh for a simple RNN. Show how it involves a product of T Jacobian matrices. This product is the source of all problems.
+Derive the gradient of the loss with respect to $W_{hh}$ for a simple RNN. Show how it involves a product of $T$ Jacobian matrices. This product is the source of all problems.
 
 **Key insight to convey**: BPTT is computationally expensive (O(T) in both time and memory for the backward pass) and numerically unstable (the gradient product). Truncated BPTT is the practical compromise — backpropagate only K steps instead of T, trading gradient accuracy for stability.
 
@@ -90,16 +91,14 @@ Derive the gradient of the loss with respect to W_hh for a simple RNN. Show how 
 
 This is the most important theoretical concept in this module, because it is the *reason* LSTMs exist and the *reason* Transformers were invented.
 
-The gradient of h_T with respect to h_1 involves the product:
+The gradient of $h_T$ with respect to $h_1$ involves the product:
 
-```
-dh_T/dh_1 = prod_{t=2}^{T} diag(f'(z_t)) * W_hh
-```
+$$\frac{\partial h_T}{\partial h_1} = \prod_{t=2}^{T} \text{diag}(f'(z_t)) \cdot W_{hh}$$
 
-Each factor is a matrix. The behavior of this product is governed by the eigenvalues of W_hh:
+Each factor is a matrix. The behavior of this product is governed by the eigenvalues of $W_{hh}$:
 
-- If the largest eigenvalue |lambda_max| < 1: the product shrinks exponentially. Gradients vanish. The network cannot learn long-range dependencies.
-- If the largest eigenvalue |lambda_max| > 1: the product grows exponentially. Gradients explode. Training becomes numerically unstable.
+- If the largest eigenvalue $|\lambda_{\max}| < 1$: the product shrinks exponentially. Gradients vanish. The network cannot learn long-range dependencies.
+- If the largest eigenvalue $|\lambda_{\max}| > 1$: the product grows exponentially. Gradients explode. Training becomes numerically unstable.
 
 There is a razor-thin band where training works, and it is very hard to stay in that band for long sequences.
 
@@ -173,25 +172,25 @@ The Long Short-Term Memory cell (Hochreiter and Schmidhuber, 1997) is one of the
 
 The LSTM has FOUR components. Teach each one by its *purpose*:
 
-**1. Forget Gate (f_t)**: "What should I throw away from the cell state?"
-- Looks at h_{t-1} and x_t, outputs a value between 0 and 1 for each element of the cell state.
+**1. Forget Gate ($f_t$)**: "What should I throw away from the cell state?"
+- Looks at $h_{t-1}$ and $x_t$, outputs a value between 0 and 1 for each element of the cell state.
 - 1 = keep everything. 0 = forget everything.
 - This is the gate that allows the LSTM to *clear* irrelevant memories.
 
-**2. Input Gate (i_t)**: "What new information should I store in the cell state?"
-- Also looks at h_{t-1} and x_t.
-- Works with the candidate cell state (g_t, sometimes called c_tilde) to determine what to add.
-- The input gate *scales* the candidate — it is the bouncer deciding what gets in.
+**2. Input Gate ($i_t$)**: "What new information should I store in the cell state?"
+- Also looks at $h_{t-1}$ and $x_t$.
+- Works with the candidate cell state ($\tilde{C}_t$) to determine what to add.
+- The input gate *scales* the candidate -- it is the bouncer deciding what gets in.
 
-**3. Cell State Update (C_t)**: "Update the memory."
-- C_t = f_t * C_{t-1} + i_t * g_t
+**3. Cell State Update ($C_t$)**: "Update the memory."
+- $C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$
 - This is the key equation. The cell state is updated by *forgetting* some old content and *adding* some new content.
-- Crucially, this is a LINEAR operation on C_{t-1} (multiply by f_t, add something). Gradients flow through this without vanishing.
+- Crucially, this is a LINEAR operation on $C_{t-1}$ (multiply by $f_t$, add something). Gradients flow through this without vanishing.
 
-**4. Output Gate (o_t)**: "What part of the cell state should I output as the hidden state?"
+**4. Output Gate ($o_t$)**: "What part of the cell state should I output as the hidden state?"
 - Not everything in memory is relevant to the current output.
 - The output gate filters the cell state through tanh and selects what to expose.
-- h_t = o_t * tanh(C_t)
+- $h_t = o_t \odot \tanh(C_t)$
 
 **Diagram exercise**: Draw the full LSTM cell. Use boxes for sigmoid and tanh activations. Use circles for pointwise operations (multiply, add). Trace the cell state pathway from left to right — notice how it is a "highway" with only pointwise operations, no matrix multiplications.
 
@@ -203,13 +202,11 @@ The goal: the apprentice should be able to compute, by hand, the output of one L
 
 ### Block 4: The Gradient Highway (15 min)
 
-Why does the LSTM solve vanishing gradients? Look at the gradient of C_T with respect to C_1:
+Why does the LSTM solve vanishing gradients? Look at the gradient of $C_T$ with respect to $C_1$:
 
-```
-dC_T/dC_1 = prod_{t=2}^{T} f_t
-```
+$$\frac{\partial C_T}{\partial C_1} = \prod_{t=2}^{T} f_t$$
 
-Each f_t is a diagonal matrix with entries in (0, 1). If the forget gate is close to 1, the gradient is close to 1 — it flows through time almost unimpeded. Compare this to the vanilla RNN where the gradient involves products of W_hh and tanh derivatives.
+Each $f_t$ is a diagonal matrix with entries in $(0, 1)$. If the forget gate is close to 1, the gradient is close to 1 -- it flows through time almost unimpeded. Compare this to the vanilla RNN where the gradient involves products of $W_{hh}$ and tanh derivatives.
 
 The cell state is a *gradient highway*. The gates learned to control what travels on this highway.
 
@@ -227,7 +224,7 @@ The Gated Recurrent Unit (Cho et al., 2014) simplifies the LSTM:
 - GRU: fewer parameters, faster to train, often works well on smaller datasets.
 - LSTM: more expressive, sometimes better on tasks requiring fine-grained memory control.
 - In practice, try both. The difference is often small.
-- Peephole connections: let gates see the cell state directly (not just h_{t-1}). Rarely used in practice.
+- Peephole connections: let gates see the cell state directly (not just $h_{t-1}$). Rarely used in practice.
 - **Critical initialization trick**: Initialize the forget gate bias to 1.0 (or even 2.0). This means the LSTM starts by remembering everything and learns what to forget. Without this, the LSTM may start by forgetting everything, which makes early training very difficult. (Jozefowicz et al., 2015)
 
 ### Block 7: Coding Session (60 min)
@@ -330,24 +327,23 @@ This is the climax of the module. Everything has been building to this moment.
 Bahdanau et al. (2015) asked: why should the decoder be limited to a single context vector? What if, at each decoding step, the decoder could *look back* at all encoder hidden states and decide which ones are relevant?
 
 **The mechanism**:
-1. The encoder produces hidden states h_1, h_2, ..., h_T (one per source word).
-2. At each decoder step t, compute an *alignment score* between the decoder state s_t and each encoder state h_j.
-3. Normalize the scores with softmax to get *attention weights* alpha_{t,j}.
-4. Compute the *context vector* c_t as a weighted sum of encoder hidden states.
-5. Use c_t (along with s_t) to predict the next word.
+1. The encoder produces hidden states $h_1, h_2, \ldots, h_T$ (one per source word).
+2. At each decoder step $t$, compute an *alignment score* between the decoder state $s_t$ and each encoder state $h_j$.
+3. Normalize the scores with softmax to get *attention weights* $\alpha_{t,j}$.
+4. Compute the *context vector* $c_t$ as a weighted sum of encoder hidden states.
+5. Use $c_t$ (along with $s_t$) to predict the next word.
 
 **Bahdanau (additive) attention**:
-```
-e_{t,j} = v^T * tanh(W_s * s_{t-1} + W_h * h_j)
-alpha_{t,j} = softmax_j(e_{t,j})
-c_t = sum_j alpha_{t,j} * h_j
-```
+
+$$\begin{aligned}
+e_{t,j} &= v^\top \tanh(W_s\, s_{t-1} + W_h\, h_j) \\
+\alpha_{t,j} &= \text{softmax}_j(e_{t,j}) \\
+c_t &= \sum_j \alpha_{t,j}\, h_j
+\end{aligned}$$
 
 **Luong (multiplicative) attention**:
-```
-e_{t,j} = s_t^T * W * h_j    (general)
-e_{t,j} = s_t^T * h_j         (dot)
-```
+
+$$e_{t,j} = s_t^\top W h_j \quad \text{(general)} \qquad e_{t,j} = s_t^\top h_j \quad \text{(dot)}$$
 
 Multiplicative attention is simpler and faster. Both work well.
 
@@ -356,9 +352,9 @@ Multiplicative attention is simpler and faster. Both work well.
 ### Block 6: Attention as Soft Lookup and the Bridge to Transformers (15 min)
 
 Reframe attention as a differentiable dictionary lookup:
-- **Query**: what the decoder is looking for (s_t)
-- **Keys**: what each encoder position offers (h_j)
-- **Values**: the actual content at each position (also h_j, or a projection of it)
+- **Query**: what the decoder is looking for ($s_t$)
+- **Keys**: what each encoder position offers ($h_j$)
+- **Values**: the actual content at each position (also $h_j$, or a projection of it)
 
 The alignment score measures how well the query matches each key. The output is a weighted sum of values.
 

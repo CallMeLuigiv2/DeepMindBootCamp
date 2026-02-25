@@ -1,0 +1,42 @@
+# Diffusion Model (DDPM) - Configuration
+
+# Noise schedule
+noise_schedule:
+  type: "linear"          # "linear" or "cosine"
+  T: 1000                 # Number of diffusion timesteps
+  beta_start: 0.0001
+  beta_end: 0.02
+
+# U-Net architecture
+unet:
+  in_channels: 1
+  base_channels: 64
+  channel_mults: [1, 2, 4]   # Channels: 64, 128, 256
+  time_emb_dim: 128
+  num_groups: 8               # GroupNorm groups
+
+# Training
+training:
+  batch_size: 128
+  num_epochs: 50
+  learning_rate: 0.0002
+  optimizer: adam
+  seed: 42
+  dataset: "mnist"            # "mnist" or "fashion_mnist"
+
+# Experiments
+experiments:
+  T_values: [100, 500, 1000]
+  schedules: ["linear", "cosine"]
+
+# Sampling
+sampling:
+  num_samples: 64
+  trajectory_steps: [999, 749, 499, 249, 124, 62, 0]
+
+# Logging
+logging:
+  log_interval: 100
+  save_interval: 10
+  save_dir: checkpoints
+  log_dir: logs

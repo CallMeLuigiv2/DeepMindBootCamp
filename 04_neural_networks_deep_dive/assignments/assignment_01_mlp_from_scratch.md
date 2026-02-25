@@ -36,7 +36,7 @@ Build a class `MLP` that supports:
    implement this yourself — no autograd.
 
 5. **Parameter update**: Implement vanilla SGD. Update each parameter using:
-   `W -= learning_rate * dW`
+   $W \mathrel{-}= \eta \cdot dW$
 
 6. **Loss function**: Implement softmax + cross-entropy loss for classification.
    - Forward: convert logits to probabilities via softmax, compute cross-entropy.
@@ -210,16 +210,18 @@ def compare_gradients(numpy_grads, pytorch_model):
 
 Write a short report (1-2 pages in your notebook) covering:
 
-1. **Gradient derivation**: Show the full chain rule derivation for dL/dW1 (the first layer
+1. **Gradient derivation**: Show the full chain rule derivation for $\frac{\partial \mathcal{L}}{\partial W_1}$ (the first layer
    weights) for your specific architecture. Every step.
 
-2. **The softmax-cross-entropy gradient simplification**: Derive why dL/dz (for the output
-   layer) simplifies to (y_hat - y_true). This is one of the most elegant results in
+2. **The softmax-cross-entropy gradient simplification**: Derive why $\frac{\partial \mathcal{L}}{\partial \mathbf{z}}$ (for the output
+   layer) simplifies to $\hat{\mathbf{y}} - \mathbf{y}_{\text{true}}$. This is one of the most elegant results in
    neural network math.
 
 3. **Numerical gradient checking**: For a small network (e.g., [4, 3, 2]), compute gradients
    numerically using finite differences:
-   `dL/dw_ij ~ (L(w_ij + epsilon) - L(w_ij - epsilon)) / (2 * epsilon)`
+
+   $$\frac{\partial \mathcal{L}}{\partial w_{ij}} \approx \frac{\mathcal{L}(w_{ij} + \epsilon) - \mathcal{L}(w_{ij} - \epsilon)}{2\epsilon}$$
+
    Compare to your analytical gradients. Report the relative error.
 
 4. **What you learned**: What was the hardest part? What confused you? What clicked?
@@ -272,10 +274,10 @@ For those who want to go further:
 
 ## Hints
 
-- **Numerical stability in softmax**: Always subtract the max of z before exponentiating.
-  `exp(z - max(z))` prevents overflow.
-- **Numerical stability in cross-entropy**: Add a small epsilon inside the log.
-  `log(y_hat + 1e-8)` prevents log(0).
+- **Numerical stability in softmax**: Always subtract the max of $\mathbf{z}$ before exponentiating.
+  $\exp(z - \max(z))$ prevents overflow.
+- **Numerical stability in cross-entropy**: Add a small $\epsilon$ inside the log.
+  $\log(\hat{y} + 10^{-8})$ prevents $\log(0)$.
 - **Matrix dimensions**: The most common bug is transposing a matrix that should not be
   transposed, or vice versa. Write out dimensions for every operation.
 - **Gradient checking**: If your gradients do not match PyTorch, start with a TINY network

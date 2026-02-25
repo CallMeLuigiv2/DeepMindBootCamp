@@ -98,17 +98,13 @@ pattern, the output is high. Where it does not match, the output is low.
 
 **The convolution formula (2D, single channel):**
 
-```
-Output(i, j) = sum over m, n of Input(i+m, j+n) * Kernel(m, n) + bias
-```
+$$\text{Output}(i, j) = \sum_{m,n} \text{Input}(i+m,\; j+n) \cdot \text{Kernel}(m, n) + \text{bias}$$
 
-More precisely, for a kernel of size K x K applied to an input of size H x W:
+More precisely, for a kernel of size $K \times K$ applied to an input of size $H \times W$:
 
-```
-Output(i, j) = sum_{m=0}^{K-1} sum_{n=0}^{K-1} Input(i*s + m, j*s + n) * Kernel(m, n) + b
-```
+$$\text{Output}(i, j) = \sum_{m=0}^{K-1} \sum_{n=0}^{K-1} \text{Input}(i \cdot s + m,\; j \cdot s + n) \cdot \text{Kernel}(m, n) + b$$
 
-where s is the stride.
+where $s$ is the stride.
 
 **Technical note:** What we call "convolution" in deep learning is technically
 cross-correlation. True convolution flips the kernel. In practice this does not matter
@@ -119,16 +115,14 @@ padding). Label every output element. Verify: output is 4x4.
 
 ### Block 3: Stride, Padding, and Output Size Arithmetic (30 min)
 
-**The output size formula — memorize this:**
+**The output size formula -- memorize this:**
 
-```
-output_size = floor((input_size + 2 * padding - kernel_size) / stride) + 1
-```
+$$\text{output\_size} = \left\lfloor \frac{\text{input\_size} + 2 \times \text{padding} - \text{kernel\_size}}{\text{stride}} \right\rfloor + 1$$
 
 **Padding types:**
 - **Valid (no padding):** No zeros added. Output shrinks. `padding = 0`.
 - **Same padding:** Enough zeros added so output size equals input size (when stride=1).
-  `padding = (kernel_size - 1) / 2` (requires odd kernel size).
+  $\text{padding} = (\text{kernel\_size} - 1) / 2$ (requires odd kernel size).
 
 **Why same padding matters:** Without it, every convolution layer shrinks the spatial
 dimensions. After a few layers, your feature maps vanish. Same padding preserves spatial
@@ -156,13 +150,10 @@ The output has 64 channels.
 
 **Parameter count for a conv layer:**
 
-```
-params = (kernel_h * kernel_w * in_channels + 1) * out_channels
-                                            ^bias    ^one set per filter
-```
+$$\text{params} = (K_h \times K_w \times C_{in} + 1) \times C_{out}$$
 
 **Example:** Conv layer with 3x3 kernel, 64 input channels, 128 output channels:
-`(3 * 3 * 64 + 1) * 128 = 73,856 parameters`
+$(3 \times 3 \times 64 + 1) \times 128 = 73{,}856$ parameters
 
 **Drawing exercise:** Draw the tensor shapes flowing through:
 Input (1, 3, 32, 32) -> Conv2d(3, 16, 3, padding=1) -> Output (1, 16, 32, 32)
@@ -185,8 +176,8 @@ Depthwise separable: split into two steps:
 1. Depthwise conv: one filter PER input channel (no cross-channel mixing)
 2. Pointwise conv: 1x1 conv to mix channels
 
-Computational savings: If standard conv costs `K*K*C_in*C_out`, depthwise separable costs
-`K*K*C_in + C_in*C_out`. For K=3, C_in=C_out=256: standard = 589,824, separable = 67,840.
+Computational savings: If standard conv costs $K^2 \cdot C_{in} \cdot C_{out}$, depthwise separable costs
+$K^2 \cdot C_{in} + C_{in} \cdot C_{out}$. For $K=3$, $C_{in}=C_{out}=256$: standard = 589,824, separable = 67,840.
 That is an 8.7x reduction.
 
 **Transposed Convolutions (Deconvolution):**
@@ -215,8 +206,8 @@ implementation. Visualize the result.
 ### Key Takeaways — Session 1
 
 1. Convolution exploits two priors: locality and translation equivariance.
-2. The output size formula is: `out = (in + 2*pad - kernel) / stride + 1`. Know it cold.
-3. Parameters per conv layer: `(K*K*C_in + 1) * C_out`. This is tiny compared to FC layers.
+2. The output size formula is: $\text{out} = \lfloor(\text{in} + 2p - K) / s\rfloor + 1$. Know it cold.
+3. Parameters per conv layer: $(K^2 \cdot C_{in} + 1) \cdot C_{out}$. This is tiny compared to FC layers.
 4. 1x1 convolutions are fully-connected layers across channels — extremely powerful.
 5. Depthwise separable convolutions give huge computational savings with minimal accuracy loss.
 
@@ -567,8 +558,8 @@ to learn identity mappings.
     Output = F(x) + x
 ```
 
-Instead of learning `H(x)` directly, the network learns the residual `F(x) = H(x) - x`.
-If the optimal mapping is close to identity, the network just needs to push `F(x)` toward
+Instead of learning $H(x)$ directly, the network learns the residual $F(x) = H(x) - x$.
+If the optimal mapping is close to identity, the network just needs to push $F(x)$ toward
 zero, which is much easier than learning a complete identity mapping from scratch.
 
 **Why skip connections work — three perspectives:**
@@ -576,10 +567,10 @@ zero, which is much easier than learning a complete identity mapping from scratc
 1. **Gradient flow:** During backpropagation, gradients can flow directly through the skip
    connection, bypassing the conv layers. Even if the conv layers have vanishing gradients,
    the skip connection provides an unimpeded gradient highway. Mathematically:
-   `dL/dx = dL/dout * (dF(x)/dx + 1)`. That `+1` means gradients never vanish completely.
+   $\frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial \text{out}} \cdot \left(\frac{\partial F(x)}{\partial x} + 1\right)$. That $+1$ means gradients never vanish completely.
 
 2. **Ensemble interpretation:** A ResNet can be viewed as an ensemble of many paths of
-   different lengths. With N residual blocks, there are 2^N possible paths from input to
+   different lengths. With $N$ residual blocks, there are $2^N$ possible paths from input to
    output (each block can be "skipped" or "used"). The network implicitly trains an
    exponential number of sub-networks.
 
@@ -632,7 +623,7 @@ connections even when the conv layers have near-zero gradients.
 ### Block 6: DenseNet, EfficientNet, and Modern Designs (30 min)
 
 **DenseNet (2017):**
-Instead of adding the skip connection (`y = F(x) + x`), concatenate it (`y = [F(x), x]`).
+Instead of adding the skip connection ($y = F(x) + x$), concatenate it ($y = [F(x), x]$).
 Each layer receives feature maps from ALL preceding layers. Dense connectivity encourages
 feature reuse and reduces parameters.
 ```
@@ -648,11 +639,11 @@ Layer 0 -> Layer 1 -> Layer 2 -> Layer 3
 **EfficientNet (2019):**
 Key idea: compound scaling. Previous architectures scaled one dimension (depth, width, or
 resolution) independently. EfficientNet scales all three simultaneously with fixed ratios:
-- depth: d = alpha^phi
-- width: w = beta^phi
-- resolution: r = gamma^phi
+- depth: $d = \alpha^\phi$
+- width: $w = \beta^\phi$
+- resolution: $r = \gamma^\phi$
 
-Where alpha * beta^2 * gamma^2 ~ 2 (so FLOPS roughly double for each increment of phi).
+Where $\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2$ (so FLOPs roughly double for each increment of $\phi$).
 
 Base architecture (EfficientNet-B0) found via neural architecture search (NAS). Then scaled
 up to B1-B7 using the compound scaling rule. B7 achieved state-of-the-art ImageNet accuracy
@@ -719,9 +710,7 @@ By the end of this session, you will be able to:
 the standard deviation, computed over the mini-batch. Then applies a learned scale (gamma) and
 shift (beta).
 
-```
-BN(x) = gamma * (x - mean(x)) / sqrt(var(x) + epsilon) + beta
-```
+$$\text{BN}(x) = \gamma \cdot \frac{x - \mu(x)}{\sqrt{\sigma^2(x) + \epsilon}} + \beta$$
 
 **Why it helps:**
 - Reduces internal covariate shift (the distribution of inputs to each layer changes as
@@ -747,7 +736,7 @@ not batch statistics.
 
 **Residual connections beyond ResNet:**
 Skip connections appear everywhere now:
-- Transformer blocks: `output = LayerNorm(x + Attention(x))`
+- Transformer blocks: $\text{output} = \text{LayerNorm}(x + \text{Attention}(x))$
 - U-Net: skip connections between encoder and decoder
 - DenseNet: concatenation-based skip connections
 
@@ -781,7 +770,7 @@ minimal cost.
 - **Cutout / Random Erasing:** Randomly mask out rectangular regions. Forces the network to
   use the full image, not just the most discriminative part.
 - **Mixup:** Linearly interpolate between pairs of training examples AND their labels.
-  `x_new = lambda*x1 + (1-lambda)*x2`, `y_new = lambda*y1 + (1-lambda)*y2`.
+  $x_{new} = \lambda x_1 + (1-\lambda) x_2$, $y_{new} = \lambda y_1 + (1-\lambda) y_2$.
   Encourages linear behavior between training examples.
 - **CutMix:** Cut a patch from one image and paste it onto another. Labels are mixed
   proportionally to the area. Combines the benefits of Cutout and Mixup.

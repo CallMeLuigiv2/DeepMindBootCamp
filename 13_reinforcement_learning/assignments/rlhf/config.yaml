@@ -1,0 +1,64 @@
+# RLHF Configuration
+# ====================
+
+# Base model
+model_name: "gpt2"  # GPT-2 small, 124M parameters
+seed: 42
+
+# Text generation
+max_gen_length: 100
+temperature: 0.7
+top_p: 0.9
+
+# Preference dataset
+n_prompts: 50
+n_pairs_per_prompt: 20
+preference_rule: "brevity"  # Options: brevity, positive_sentiment, helpfulness
+validation_split: 0.2
+dataset_path: "data/preferences.json"
+
+# Reward model training
+reward_model:
+  learning_rate: 1e-5
+  epochs: 3
+  batch_size: 8
+  warmup_steps: 100
+  max_length: 512
+  target_accuracy: 0.8  # validation accuracy target
+
+# SFT (Supervised Fine-Tuning) -- optional pre-step
+sft:
+  epochs: 1
+  learning_rate: 2e-5
+  batch_size: 4
+
+# PPO fine-tuning
+ppo:
+  learning_rate: 1e-6
+  n_steps: 200
+  batch_size: 8
+  n_epochs: 4
+  clip_eps: 0.2
+  kl_coeff: 0.1  # beta for KL penalty
+  gamma: 1.0     # no discounting for single-turn generation
+  gae_lambda: 0.95
+  max_grad_norm: 1.0
+  response_max_length: 100
+
+# DPO
+dpo:
+  learning_rate: 5e-7
+  epochs: 3
+  batch_size: 4
+  beta: 0.1  # temperature parameter
+
+# KL coefficient sweep
+kl_sweep:
+  coefficients: [0.01, 0.05, 0.1, 0.2, 0.5, 1.0]
+
+# Logging
+log_interval: 10
+save_interval: 50
+checkpoint_dir: "checkpoints"
+log_dir: "logs"
+data_dir: "data"

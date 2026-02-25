@@ -12,17 +12,17 @@ By the end of this assignment, you will have implemented custom autograd functio
 
 ### Background
 
-The SiLU (Sigmoid Linear Unit) activation is defined as `f(x) = x * sigmoid(x)`. A parameterized variant uses a learnable scaling parameter: `f(x) = x * sigmoid(beta * x)`, where `beta` is a learnable scalar.
+The SiLU (Sigmoid Linear Unit) activation is defined as $f(x) = x \cdot \sigma(x)$. A parameterized variant uses a learnable scaling parameter: $f(x) = x \cdot \sigma(\beta x)$, where $\beta$ is a learnable scalar.
 
 PyTorch's built-in `torch.nn.SiLU` does not support a learnable `beta`. You will implement this as a custom autograd Function.
 
 ### Task
 
-1. **Derive the gradients analytically.** Given `f(x) = x * sigmoid(beta * x)`, compute:
-   - `df/dx` (the gradient with respect to the input)
-   - `df/dbeta` (the gradient with respect to the parameter)
+1. **Derive the gradients analytically.** Given $f(x) = x \cdot \sigma(\beta x)$, compute:
+   - $\frac{\partial f}{\partial x}$ (the gradient with respect to the input)
+   - $\frac{\partial f}{\partial \beta}$ (the gradient with respect to the parameter)
 
-   Show your derivation in a comment or markdown cell. The chain rule through sigmoid is essential here: `sigmoid'(z) = sigmoid(z) * (1 - sigmoid(z))`.
+   Show your derivation in a comment or markdown cell. The chain rule through sigmoid is essential here: $\sigma'(z) = \sigma(z)(1 - \sigma(z))$.
 
 2. **Implement `ParameterizedSwish` as a `torch.autograd.Function`.**
    - `forward(ctx, x, beta)` should compute `x * sigmoid(beta * x)`.
@@ -96,12 +96,12 @@ Sometimes you need a loss function with a non-trivial backward pass that differs
 
 1. **Implement `AsymmetricMSELoss` as a custom autograd Function.**
    - This loss penalizes overestimation and underestimation differently.
-   - Forward: `L = mean(alpha * max(0, y_pred - y_true)^2 + beta * max(0, y_true - y_pred)^2)` where `alpha` and `beta` are constants (e.g., alpha=1.0, beta=2.0 penalizes underestimation more).
-   - Backward: Compute the correct gradient of this loss with respect to `y_pred`. `y_true` does not require a gradient.
+   - Forward: $\mathcal{L} = \text{mean}\left(\alpha \cdot \max(0, \hat{y} - y)^2 + \beta \cdot \max(0, y - \hat{y})^2\right)$ where $\alpha$ and $\beta$ are constants (e.g., $\alpha=1.0$, $\beta=2.0$ penalizes underestimation more).
+   - Backward: Compute the correct gradient of this loss with respect to $\hat{y}$. $y$ does not require a gradient.
 
 2. **Verify with gradcheck.** Use float64 inputs.
 
-3. **Use the custom loss** to train a simple regression model on synthetic data where underestimation is more costly than overestimation (e.g., predicting resource usage where underestimation causes outages). Show that with `beta > alpha`, the model's predictions are biased upward compared to standard MSE.
+3. **Use the custom loss** to train a simple regression model on synthetic data where underestimation is more costly than overestimation (e.g., predicting resource usage where underestimation causes outages). Show that with $\beta > \alpha$, the model's predictions are biased upward compared to standard MSE.
 
 ### Deliverables
 
@@ -159,6 +159,6 @@ All of the above, plus:
 
 1. **Higher-order gradients:** Modify your `ParameterizedSwish` to support `torch.autograd.gradgradcheck` (double backward). This requires implementing `backward` in a way that is itself differentiable. The trick: inside `backward`, use PyTorch operations on tensors with `requires_grad=True` rather than manual gradient formulas with `.data`. Verify with `torch.autograd.gradgradcheck`.
 
-2. **Custom function for log-sum-exp:** Implement a numerically stable log-sum-exp as a custom autograd Function. The forward should use the max-subtraction trick: `log(sum(exp(x_i))) = max(x) + log(sum(exp(x_i - max(x))))`. The backward should return the correct gradient (softmax). Verify it is more numerically stable than the naive implementation by testing with large input values (e.g., `torch.tensor([1000.0, 1001.0, 1002.0])`).
+2. **Custom function for log-sum-exp:** Implement a numerically stable log-sum-exp as a custom autograd Function. The forward should use the max-subtraction trick: $\log(\sum \exp(x_i)) = \max(x) + \log(\sum \exp(x_i - \max(x)))$. The backward should return the correct gradient (softmax). Verify it is more numerically stable than the naive implementation by testing with large input values (e.g., `torch.tensor([1000.0, 1001.0, 1002.0])`).
 
 3. **Custom CUDA kernel in autograd:** If you have CUDA experience, implement a simple custom operation (e.g., fused add + multiply) as a CUDA kernel, wrap it in a custom autograd Function, and benchmark against the pure-PyTorch equivalent.

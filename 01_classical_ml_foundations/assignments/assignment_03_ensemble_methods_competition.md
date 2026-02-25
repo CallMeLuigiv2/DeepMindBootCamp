@@ -64,7 +64,7 @@ def information_gain(y_parent, y_left, y_right):
 **What to demonstrate:**
 - Compute Gini and entropy for several example distributions: [all class 0], [50/50], [90/10], [33/33/33].
 - Show that they generally agree on which splits are better.
-- Plot both as a function of p (probability of class 1) for binary classification. They have very similar shapes.
+- Plot both as a function of $p$ (probability of class 1) for binary classification. They have very similar shapes.
 
 ### 1B: Finding the Best Split (10 points)
 

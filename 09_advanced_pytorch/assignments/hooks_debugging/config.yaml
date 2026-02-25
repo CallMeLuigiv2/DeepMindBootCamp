@@ -1,0 +1,42 @@
+# Hooks and Debugging - Configuration
+
+# Data
+data:
+  dataset: mnist
+  batch_size: 128
+  val_split: 0.1
+  num_workers: 0
+  noise_std: 0.5  # Gaussian noise for domain adaptation source domain
+
+# Deep network for gradient flow experiments
+gradient_flow:
+  num_layers: 20
+  hidden_size: 128
+  activation: sigmoid  # sigmoid, relu
+
+# DANN (Domain Adaptation)
+dann:
+  feature_dim: 256
+  hidden_dim: 128
+  num_classes: 5  # Digits 0-4
+  lambda_val: 1.0  # Gradient reversal scaling
+
+# Pruning
+pruning:
+  prune_ratios: [0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
+  finetune_epochs: 5
+  iterative_steps: 5
+  iterative_ratio_per_step: 0.1
+
+# Training
+training:
+  num_epochs: 10
+  learning_rate: 0.001
+  optimizer: adam
+  weight_decay: 0.0
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

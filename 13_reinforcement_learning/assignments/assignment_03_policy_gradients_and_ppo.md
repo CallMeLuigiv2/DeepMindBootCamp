@@ -124,7 +124,7 @@ class REINFORCEWithBaseline:
 - Plot on the same axes as Part 1.
 - Repeat the variance analysis from Part 1.3. The gradient variance should be **significantly lower**.
 
-**Key insight:** the baseline does not change the expected gradient (prove this in your writeup by showing E[nabla log pi * b(s)] = 0). It only reduces variance, making learning faster and more stable.
+**Key insight:** the baseline does not change the expected gradient (prove this in your writeup by showing $\mathbb{E}[\nabla \log \pi \cdot b(s)] = 0$). It only reduces variance, making learning faster and more stable.
 
 ---
 
@@ -308,9 +308,9 @@ class PPOTrainer:
 
 **Implementation checklist** (each of these matters):
 - [ ] Parallel environments (n_envs=8)
-- [ ] GAE advantage estimation (lambda=0.95)
+- [ ] GAE advantage estimation ($\lambda=0.95$)
 - [ ] Advantage normalization (zero mean, unit variance per batch)
-- [ ] Clipped surrogate objective (eps=0.2)
+- [ ] Clipped surrogate objective ($\epsilon=0.2$)
 - [ ] Multiple epochs per rollout (n_epochs=4)
 - [ ] Mini-batch updates within each epoch
 - [ ] Entropy bonus (coef=0.01)

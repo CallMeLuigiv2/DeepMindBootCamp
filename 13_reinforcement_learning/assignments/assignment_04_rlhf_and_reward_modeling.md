@@ -264,16 +264,16 @@ Train the policy model with RLHF:
 
 **Important details:**
 - Use a low learning rate (1e-6 to 5e-6). Language models are sensitive to large updates.
-- The KL coefficient (beta) is critical. Start with beta=0.1 and adjust.
+- The KL coefficient ($\beta$) is critical. Start with $\beta=0.1$ and adjust.
 - Generate with temperature=0.7 or nucleus sampling (top_p=0.9).
 - Freeze the reference model and reward model. Only the policy model is updated.
 
 ### 4.3 KL Penalty Sweep
 
 Train three models with different KL coefficients:
-- beta = 0.01 (weak penalty -- the model can deviate far from the reference)
-- beta = 0.1 (moderate penalty)
-- beta = 1.0 (strong penalty -- the model stays very close to the reference)
+- $\beta = 0.01$ (weak penalty -- the model can deviate far from the reference)
+- $\beta = 0.1$ (moderate penalty)
+- $\beta = 1.0$ (strong penalty -- the model stays very close to the reference)
 
 For each, compare:
 - Final reward
@@ -309,7 +309,7 @@ Compute the following metrics for 100 generations from each model:
 
 Present in a table:
 
-| Metric | Base GPT-2 | RLHF-tuned (beta=0.01) | RLHF-tuned (beta=0.1) | RLHF-tuned (beta=1.0) |
+| Metric | Base GPT-2 | RLHF-tuned ($\beta$=0.01) | RLHF-tuned ($\beta$=0.1) | RLHF-tuned ($\beta$=1.0) |
 |--------|-----------|------------------------|------------------------|------------------------|
 | Reward Score | | | | |
 | Response Length | | | | |
@@ -384,14 +384,14 @@ Write a 200-300 word comparison discussing the practical tradeoffs between PPO-R
 
 ### 7.1 Reward Hacking Investigation
 
-With the lowest KL penalty (beta=0.01), investigate reward hacking:
+With the lowest KL penalty ($\beta=0.01$), investigate reward hacking:
 - Examine the highest-reward generations. Do they look good to a human, or has the model found degenerate patterns?
 - Compute the perplexity of high-reward generations under the base model. Very high perplexity (very unnatural text) with high reward indicates hacking.
 - If you observe reward hacking, describe the specific pattern the model exploits.
 
 ### 7.2 KL-Reward Frontier
 
-Plot the **KL-Reward frontier**: for each KL coefficient (beta=0.01, 0.05, 0.1, 0.2, 0.5, 1.0), plot a point at (final KL, final reward). Connect the points. This curve shows the fundamental tradeoff: more KL divergence buys more reward, but at the cost of moving further from the base model.
+Plot the **KL-Reward frontier**: for each KL coefficient ($\beta$=0.01, 0.05, 0.1, 0.2, 0.5, 1.0), plot a point at (final KL, final reward). Connect the points. This curve shows the fundamental tradeoff: more KL divergence buys more reward, but at the cost of moving further from the base model.
 
 ### 7.3 Written Analysis
 

@@ -1,0 +1,37 @@
+# VAE - Configuration
+
+# Model
+model:
+  input_dim: 784
+  hidden_dims: [512, 256]
+  latent_dim: 2
+  # For conditional VAE
+  num_classes: 10
+
+# Training
+training:
+  batch_size: 128
+  num_epochs: 30
+  learning_rate: 0.001
+  optimizer: adam
+  beta: 1.0             # Standard VAE; vary for beta-VAE experiments
+  kl_annealing: false
+  kl_annealing_epochs: 10
+  seed: 42
+
+# Beta-VAE experiments
+beta_experiments:
+  beta_values: [0.1, 0.5, 1.0, 2.0, 5.0, 10.0]
+
+# Visualization
+visualization:
+  num_samples: 100
+  grid_size: 20
+  latent_range: [-3, 3]
+  num_interpolation_steps: 10
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

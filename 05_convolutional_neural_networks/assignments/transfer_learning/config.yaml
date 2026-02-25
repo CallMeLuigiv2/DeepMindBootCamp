@@ -1,0 +1,73 @@
+# Transfer Learning -- Default Configuration
+
+data:
+  dataset: "flowers102"  # flowers102, food101, eurosat, or path to ImageFolder
+  image_size: 224
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  num_workers: 2
+  seed: 42
+
+model:
+  backbone: "resnet50"   # resnet50, efficientnet_b0
+  pretrained: true
+  num_classes: 102       # Adjust for your dataset
+
+strategies:
+  scratch:
+    description: "Small CNN trained from scratch (baseline)"
+    epochs: 50
+    learning_rate: 0.001
+    optimizer: "adam"
+    scheduler: "step"
+    step_size: 15
+    gamma: 0.5
+
+  frozen:
+    description: "Strategy 1: Frozen backbone, train head only"
+    epochs: 30
+    learning_rate: 0.001
+    optimizer: "adam"
+    scheduler: "step"
+    step_size: 10
+    gamma: 0.5
+
+  partial:
+    description: "Strategy 2: Fine-tune last block + head"
+    epochs: 30
+    unfreeze_from: "layer4"  # For ResNet: layer4
+    learning_rates:
+      backbone: 0.0001
+      head: 0.001
+    optimizer: "adam"
+    scheduler: "cosine"
+
+  full:
+    description: "Strategy 3: Full fine-tuning with differential LR"
+    warmup_epochs: 5
+    finetune_epochs: 25
+    warmup_lr: 0.001
+    differential_lr:
+      conv1: 0.000001
+      bn1: 0.000001
+      layer1: 0.00001
+      layer2: 0.00005
+      layer3: 0.0001
+      layer4: 0.0005
+      fc: 0.001
+    optimizer: "adam"
+    scheduler: "cosine"
+
+augmentation:
+  minimal:
+    description: "Resize + CenterCrop only"
+  standard:
+    description: "RandomResizedCrop + HorizontalFlip"
+  aggressive:
+    description: "Full augmentation pipeline with ColorJitter, Rotation, Erasing"
+
+output:
+  save_dir: "checkpoints"
+  log_dir: "runs"
+  figures_dir: "figures"

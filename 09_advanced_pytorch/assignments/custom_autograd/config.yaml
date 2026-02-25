@@ -1,0 +1,43 @@
+# Custom Autograd - Configuration
+
+# Data
+data:
+  dataset: mnist
+  batch_size: 128
+  val_split: 0.1
+  num_workers: 0
+
+# Model (binary activation network for STE experiments)
+model:
+  hidden_sizes: [256, 128]
+  num_classes: 10
+  input_size: 784
+  activation: hard_threshold_ste  # hard_threshold_ste or clamped_ste
+
+# Parameterized Swish
+swish:
+  initial_beta: 1.0
+
+# Asymmetric Loss
+asymmetric_loss:
+  alpha: 1.0
+  beta: 2.0
+
+# Training
+training:
+  num_epochs: 10
+  learning_rate: 0.001
+  optimizer: adam
+  weight_decay: 0.0
+
+# Benchmarking
+benchmark:
+  input_sizes: [1000, 10000, 100000, 1000000]
+  num_runs: 100
+  warmup_runs: 10
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

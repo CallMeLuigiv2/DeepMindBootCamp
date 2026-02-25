@@ -17,7 +17,7 @@ In this assignment, you will build GANs of increasing sophistication. You will s
 Build a simple MLP generator:
 
 **Architecture:**
-- Input: z ~ N(0, I), shape (batch_size, latent_dim) where latent_dim = 100
+- Input: $z \sim \mathcal{N}(0, I)$, shape (batch_size, latent_dim) where latent_dim = 100
 - Linear(100, 256) -> LeakyReLU(0.2)
 - Linear(256, 512) -> LeakyReLU(0.2)
 - Linear(512, 1024) -> LeakyReLU(0.2)
@@ -80,10 +80,10 @@ Log the following at every epoch:
 - D loss on real images (should stay low)
 - D loss on fake images (should start high, then decrease as G improves)
 - G loss (should decrease if G is improving)
-- D(x_real) — average discriminator output on real images (should stay near 1)
-- D(G(z)) — average discriminator output on fake images (should increase toward 0.5 at equilibrium)
+- $D(x_{\text{real}})$ — average discriminator output on real images (should stay near 1)
+- $D(G(z))$ — average discriminator output on fake images (should increase toward 0.5 at equilibrium)
 
-**Critical diagnostic:** If D(G(z)) drops to 0 and stays there, the discriminator has won — the generator receives no gradient signal. If D(G(z)) jumps to 1, the generator has found an exploit. Neither extreme is good.
+**Critical diagnostic:** If $D(G(z))$ drops to 0 and stays there, the discriminator has won — the generator receives no gradient signal. If $D(G(z))$ jumps to 1, the generator has found an exploit. Neither extreme is good.
 
 ### 1.5 Save Generated Samples
 
@@ -111,13 +111,13 @@ Now try the opposite: make the discriminator too strong.
 - Train the discriminator for 5 steps per generator step.
 - Use a high learning rate for D and a low learning rate for G.
 
-**Observation task:** Plot D(G(z)) over training steps. It should rapidly approach 0 and stay there. The generator loss should plateau — G has stopped learning.
+**Observation task:** Plot $D(G(z))$ over training steps. It should rapidly approach 0 and stay there. The generator loss should plateau — $G$ has stopped learning.
 
 ### 2.3 Analysis
 
 Write a paragraph for each failure mode explaining:
 - What happened and why.
-- What the loss curves and D(G(z)) values tell you.
+- What the loss curves and $D(G(z))$ values tell you.
 - How you would diagnose this in a real project.
 
 ---
@@ -284,7 +284,7 @@ def gradient_penalty(critic, real_images, fake_images, device):
 # 1. Critic loss: critic(fake) - critic(real) + lambda_gp * gradient_penalty
 # 2. Generator loss: -critic(fake)
 # 3. Train critic for n_critic=5 steps per generator step
-# 4. No log/sigmoid — raw critic outputs
+# 4. No log/sigmoid -- raw critic outputs
 # 5. lambda_gp = 10 (standard value)
 
 for epoch in range(num_epochs):
@@ -332,7 +332,7 @@ Train both a standard DCGAN and a WGAN-GP on the same dataset with the same arch
 
 The Frechet Inception Distance (FID) measures the distance between the distribution of generated images and real images in the feature space of a pretrained Inception-v3 network.
 
-    FID = ||mu_real - mu_gen||^2 + Tr(Sigma_real + Sigma_gen - 2 * (Sigma_real * Sigma_gen)^{1/2})
+$$\text{FID} = \|\mu_{\text{real}} - \mu_{\text{gen}}\|^2 + \text{Tr}\left(\Sigma_{\text{real}} + \Sigma_{\text{gen}} - 2(\Sigma_{\text{real}} \Sigma_{\text{gen}})^{1/2}\right)$$
 
 Lower FID = better (0 means the distributions are identical).
 

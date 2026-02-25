@@ -20,7 +20,7 @@ think of backprop as a black box.
 
 Consider a 3-layer network with the following architecture:
 
-- Input: x in R^2 (2 features)
+- Input: $\mathbf{x} \in \mathbb{R}^2$ (2 features)
 - Hidden layer 1: 3 neurons, ReLU activation
 - Hidden layer 2: 2 neurons, ReLU activation
 - Output layer: 2 neurons, softmax activation
@@ -83,51 +83,46 @@ Now compute the gradients for every parameter in the network, working backward f
 
 ### Step 1: Output Layer Gradient
 
-Compute dL/dz3 = y_hat - y_true. Write out each element.
+Compute $\frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} = \hat{\mathbf{y}} - \mathbf{y}_{\text{true}}$. Write out each element.
 
 ### Step 2: Gradients for W3 and b3
 
-```
-dL/dW3 = dL/dz3 @ a2^T    (outer product, shape 2x2)
-dL/db3 = dL/dz3            (shape 2)
-```
+$$\frac{\partial \mathcal{L}}{\partial W_3} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} \mathbf{a}_2^T \quad \text{(outer product, shape 2x2)}$$
+
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{b}_3} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} \quad \text{(shape 2)}$$
 
 Compute each element of dL/dW3 explicitly.
 
 ### Step 3: Propagate to Layer 2
 
-```
-dL/da2 = W3^T @ dL/dz3     (shape 2)
-dL/dz2 = dL/da2 * relu'(z2) (element-wise, shape 2)
-```
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{a}_2} = W_3^T \frac{\partial \mathcal{L}}{\partial \mathbf{z}_3} \quad \text{(shape 2)}$$
 
-Where relu'(z) = 1 if z > 0, 0 if z <= 0. Check the values of z2 you computed in the
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{z}_2} = \frac{\partial \mathcal{L}}{\partial \mathbf{a}_2} \odot \text{relu}'(\mathbf{z}_2) \quad \text{(element-wise, shape 2)}$$
+
+Where $\text{relu}'(z) = 1$ if $z > 0$, $0$ if $z \leq 0$. Check the values of $\mathbf{z}_2$ you computed in the
 forward pass to determine which neurons are active.
 
 ### Step 4: Gradients for W2 and b2
 
-```
-dL/dW2 = dL/dz2 @ a1^T     (shape 2x3)
-dL/db2 = dL/dz2             (shape 2)
-```
+$$\frac{\partial \mathcal{L}}{\partial W_2} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_2} \mathbf{a}_1^T \quad \text{(shape 2x3)}$$
+
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{b}_2} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_2} \quad \text{(shape 2)}$$
 
 Compute each element explicitly.
 
 ### Step 5: Propagate to Layer 1
 
-```
-dL/da1 = W2^T @ dL/dz2      (shape 3)
-dL/dz1 = dL/da1 * relu'(z1)  (element-wise, shape 3)
-```
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{a}_1} = W_2^T \frac{\partial \mathcal{L}}{\partial \mathbf{z}_2} \quad \text{(shape 3)}$$
 
-Again, check which neurons in z1 are active.
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} = \frac{\partial \mathcal{L}}{\partial \mathbf{a}_1} \odot \text{relu}'(\mathbf{z}_1) \quad \text{(element-wise, shape 3)}$$
+
+Again, check which neurons in $\mathbf{z}_1$ are active.
 
 ### Step 6: Gradients for W1 and b1
 
-```
-dL/dW1 = dL/dz1 @ x^T       (shape 3x2)
-dL/db1 = dL/dz1              (shape 3)
-```
+$$\frac{\partial \mathcal{L}}{\partial W_1} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} \mathbf{x}^T \quad \text{(shape 3x2)}$$
+
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{b}_1} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}_1} \quad \text{(shape 3)}$$
 
 Compute each element explicitly.
 
@@ -233,22 +228,22 @@ beta2  = [0.0, 0.0]
 
 ### BatchNorm Forward Pass
 
-For each neuron j in the layer, across the batch:
-1. Compute batch mean: mu_j = (1/m) * sum_i(z_j^(i))
-2. Compute batch variance: sigma^2_j = (1/m) * sum_i((z_j^(i) - mu_j)^2)
-3. Normalize: z_hat_j^(i) = (z_j^(i) - mu_j) / sqrt(sigma^2_j + epsilon)
-4. Scale and shift: z_bn_j^(i) = gamma_j * z_hat_j^(i) + beta_j
+For each neuron $j$ in the layer, across the batch:
+1. Compute batch mean: $\mu_j = \frac{1}{m} \sum_i z_j^{(i)}$
+2. Compute batch variance: $\sigma^2_j = \frac{1}{m} \sum_i (z_j^{(i)} - \mu_j)^2$
+3. Normalize: $\hat{z}_j^{(i)} = \frac{z_j^{(i)} - \mu_j}{\sqrt{\sigma^2_j + \epsilon}}$
+4. Scale and shift: $z_{\text{bn},j}^{(i)} = \gamma_j \hat{z}_j^{(i)} + \beta_j$
 
-Use epsilon = 1e-5.
+Use $\epsilon = 10^{-5}$.
 
 ### Task
 
 1. Compute the full forward pass for both samples in the batch.
 2. Compute the backward pass for at least the BatchNorm layer in layer 1.
    The BatchNorm backward pass involves:
-   - dL/dgamma_j = sum_i(dL/dz_bn_j^(i) * z_hat_j^(i))
-   - dL/dbeta_j = sum_i(dL/dz_bn_j^(i))
-   - dL/dz_j^(i) = (gamma_j / sqrt(sigma^2_j + epsilon)) * (dL/dz_bn_j^(i) - (1/m)*dL/dbeta_j - (z_hat_j^(i)/m)*dL/dgamma_j)
+   - $\frac{\partial \mathcal{L}}{\partial \gamma_j} = \sum_i \frac{\partial \mathcal{L}}{\partial z_{\text{bn},j}^{(i)}} \hat{z}_j^{(i)}$
+   - $\frac{\partial \mathcal{L}}{\partial \beta_j} = \sum_i \frac{\partial \mathcal{L}}{\partial z_{\text{bn},j}^{(i)}}$
+   - $\frac{\partial \mathcal{L}}{\partial z_j^{(i)}} = \frac{\gamma_j}{\sqrt{\sigma^2_j + \epsilon}} \left(\frac{\partial \mathcal{L}}{\partial z_{\text{bn},j}^{(i)}} - \frac{1}{m}\frac{\partial \mathcal{L}}{\partial \beta_j} - \frac{\hat{z}_j^{(i)}}{m}\frac{\partial \mathcal{L}}{\partial \gamma_j}\right)$
 3. Verify with PyTorch.
 
 This is challenging. The point is to see that BatchNorm's backward pass is more complex
@@ -262,8 +257,8 @@ Write a short essay (500-800 words) answering the question: **Why is backpropaga
 
 Your essay must address:
 
-1. **The naive alternative**: To compute dL/dw for each of N parameters using numerical
-   differentiation, we need N+1 forward passes (or 2N for central differences). For a model
+1. **The naive alternative**: To compute $\frac{\partial \mathcal{L}}{\partial w}$ for each of $N$ parameters using numerical
+   differentiation, we need $N+1$ forward passes (or $2N$ for central differences). For a model
    with 1 million parameters, that is 1 million forward passes per gradient computation.
    State the total computational complexity.
 
@@ -271,13 +266,13 @@ Your essay must address:
    has roughly the same cost as the forward pass (2-3x due to storing intermediates). State
    the total computational complexity.
 
-3. **The ratio**: For a model with N parameters, backprop is O(N) times faster than numerical
+3. **The ratio**: For a model with $N$ parameters, backprop is $O(N)$ times faster than numerical
    differentiation. For modern models with billions of parameters, this is the difference
    between "feasible" and "impossible."
 
 4. **Why it works**: The key insight is that the chain rule allows us to reuse intermediate
-   computations. When computing dL/dW1, we reuse dL/dz2 which was already computed for
-   dL/dW2. This sharing of computation is what makes it efficient.
+   computations. When computing $\frac{\partial \mathcal{L}}{\partial W_1}$, we reuse $\frac{\partial \mathcal{L}}{\partial \mathbf{z}_2}$ which was already computed for
+   $\frac{\partial \mathcal{L}}{\partial W_2}$. This sharing of computation is what makes it efficient.
 
 5. **Forward mode vs reverse mode**: Briefly explain the difference. Why is reverse mode
    (backprop) preferred when we have many parameters and one scalar loss?
@@ -309,13 +304,13 @@ Your essay must address:
 
 ## Common Mistakes to Watch For
 
-1. **Forgetting to check ReLU activation**: If z <= 0, the gradient is zero. Dead neurons
-   propagate zero gradient. Check your z values from the forward pass.
-2. **Transposition errors**: dL/dW = dL/dz @ a_prev^T, NOT a_prev @ dL/dz^T. Dimensions
+1. **Forgetting to check ReLU activation**: If $z \leq 0$, the gradient is zero. Dead neurons
+   propagate zero gradient. Check your $\mathbf{z}$ values from the forward pass.
+2. **Transposition errors**: $\frac{\partial \mathcal{L}}{\partial W} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}} \mathbf{a}_{\text{prev}}^T$, NOT $\mathbf{a}_{\text{prev}} \left(\frac{\partial \mathcal{L}}{\partial \mathbf{z}}\right)^T$. Dimensions
    must work out correctly.
 3. **Softmax gradient**: The gradient of cross-entropy with softmax simplifies to
-   (y_hat - y_true) ONLY when combined. Do not compute them separately.
-4. **BatchNorm with batch size 2**: The variance computation with m=2 produces high variance
+   $(\hat{\mathbf{y}} - \mathbf{y}_{\text{true}})$ ONLY when combined. Do not compute them separately.
+4. **BatchNorm with batch size 2**: The variance computation with $m=2$ produces high variance
    estimates. This is normal for the exercise; in practice, use larger batches.
 5. **PyTorch weight convention**: `nn.Linear(in, out)` stores weight as shape (out, in).
    Make sure your hand-computation matches this convention.

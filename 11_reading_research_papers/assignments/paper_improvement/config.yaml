@@ -1,0 +1,51 @@
+# Paper Improvement - Configuration
+
+# Base paper (same as reproduce_paper)
+paper: resnet
+
+# Data
+data:
+  dataset: cifar10
+  batch_size: 128
+  val_split: 0.1
+  num_workers: 4
+  augment: true
+
+# Model
+model:
+  architecture: resnet
+  num_layers: 3          # ResNet-20
+  num_classes: 10
+
+# Improvement (modify based on your chosen improvement)
+improvement:
+  name: stochastic_depth  # e.g., stochastic_depth, se_block, gelu_activation
+  enabled: true
+  # Stochastic depth params
+  drop_rate: 0.2
+  # SE block params
+  se_reduction: 16
+  # Alternative activation
+  activation: gelu        # relu, gelu, silu
+
+# Training
+training:
+  num_epochs: 200
+  learning_rate: 0.1
+  optimizer: sgd
+  momentum: 0.9
+  weight_decay: 0.0001
+  lr_scheduler: multistep
+  lr_milestones: [100, 150]
+  lr_gamma: 0.1
+
+# Experiment
+experiment:
+  seeds: [42, 1, 2]
+  num_runs: 3
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

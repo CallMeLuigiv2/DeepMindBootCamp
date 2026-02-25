@@ -1,0 +1,54 @@
+# GAN - Configuration
+
+# Basic GAN
+basic:
+  latent_dim: 100
+  num_epochs: 100
+  batch_size: 128
+  lr_g: 0.0002
+  lr_d: 0.0002
+  betas: [0.5, 0.999]
+
+# DCGAN
+dcgan:
+  latent_dim: 100
+  ngf: 64            # Generator feature map size
+  ndf: 64            # Discriminator feature map size
+  num_epochs: 50
+  batch_size: 128
+  lr: 0.0002
+  betas: [0.5, 0.999]
+  image_size: 64     # Resize images to this (for CelebA)
+
+# WGAN-GP
+wgan_gp:
+  latent_dim: 100
+  ngf: 64
+  ndf: 64
+  num_epochs: 50
+  batch_size: 64
+  lr: 0.0001
+  betas: [0.0, 0.9]
+  n_critic: 5
+  lambda_gp: 10
+
+# Instability experiments
+instability:
+  mode_collapse:
+    lr_g: 0.001
+    lr_d: 0.00001
+  discriminator_dominance:
+    lr_g: 0.00001
+    lr_d: 0.001
+    d_steps: 5
+
+# FID evaluation
+fid:
+  num_samples: 10000
+
+# Logging
+logging:
+  sample_interval: 5    # Save sample grid every N epochs
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

@@ -97,16 +97,11 @@ loss = a + b     # 36.0
 
 The Swish activation function is defined as:
 
-```
-swish(x) = x * sigmoid(x)
-```
+$$\text{swish}(x) = x \cdot \sigma(x)$$
 
 Its derivative is:
 
-```
-swish'(x) = sigmoid(x) + x * sigmoid(x) * (1 - sigmoid(x))
-         = sigmoid(x) * (1 + x * (1 - sigmoid(x)))
-```
+$$\text{swish}'(x) = \sigma(x) + x \cdot \sigma(x)(1 - \sigma(x)) = \sigma(x)(1 + x(1 - \sigma(x)))$$
 
 **Tasks:**
 
@@ -138,10 +133,9 @@ The STE is used when you need to backpropagate through a non-differentiable oper
 rounding or sign). The forward pass applies the non-differentiable function, but the backward
 pass pretends it is the identity function.
 
-```
-Forward: y = sign(x)  (or round, or threshold)
-Backward: dy/dx = 1   (pretend it was identity)
-```
+$$\text{Forward: } y = \text{sign}(x) \quad \text{(or round, or threshold)}$$
+
+$$\text{Backward: } \frac{dy}{dx} = 1 \quad \text{(pretend it was identity)}$$
 
 **Tasks:**
 
@@ -214,9 +208,7 @@ zeroing gradients viscerally obvious.
 Numerical gradient checking verifies that your analytical gradients (from autograd) are correct.
 The idea: approximate the gradient using finite differences.
 
-```
-df/dx ≈ (f(x + epsilon) - f(x - epsilon)) / (2 * epsilon)
-```
+$$\frac{df}{dx} \approx \frac{f(x + \epsilon) - f(x - \epsilon)}{2\epsilon}$$
 
 ### Exercise 4.1: Implement Gradient Checking
 
@@ -241,9 +233,9 @@ def numerical_gradient(func, x, eps=1e-5):
 
 1. Implement `numerical_gradient` using the central difference formula.
 2. Test it on simple functions:
-   - `f(x) = x^2` at `x = 3.0` (expected gradient: 6.0)
-   - `f(x) = sin(x)` at `x = pi/4` (expected gradient: cos(pi/4))
-   - `f(x) = x.sum()` for a vector (expected gradient: all ones)
+   - $f(x) = x^2$ at $x = 3.0$ (expected gradient: $6.0$)
+   - $f(x) = \sin(x)$ at $x = \pi/4$ (expected gradient: $\cos(\pi/4)$)
+   - $f(x) = \text{x.sum()}$ for a vector (expected gradient: all ones)
 3. Test it on a multi-layer computation:
    ```python
    def complex_func(x):
@@ -383,8 +375,8 @@ print(f"d2y/dx2 = {grad_grad_y}")  # should be 18.0
 1. Verify the above computation by hand.
 2. Explain what `create_graph=True` does and why it is needed for higher-order gradients.
 3. Compute the third derivative. What do you expect?
-4. Implement Newton's method for finding the minimum of `f(x) = (x - 3)^4` using second-order
-   gradients. Start from `x = 0.0`.
+4. Implement Newton's method for finding the minimum of $f(x) = (x - 3)^4$ using second-order
+   gradients. Start from $x = 0.0$.
 
 ### Exercise 7.2: detach() vs no_grad() Experiment
 

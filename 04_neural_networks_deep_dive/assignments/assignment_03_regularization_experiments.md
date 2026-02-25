@@ -92,19 +92,19 @@ Train the base model with L2 regularization at the following strengths:
 
 | Run | Weight decay (lambda) |
 |-----|----------------------|
-| 1a | 1e-5 |
-| 1b | 1e-4 |
-| 1c | 1e-3 |
-| 1d | 1e-2 |
-| 1e | 1e-1 |
+| 1a | $10^{-5}$ |
+| 1b | $10^{-4}$ |
+| 1c | $10^{-3}$ |
+| 1d | $10^{-2}$ |
+| 1e | $10^{-1}$ |
 
 Use AdamW (NOT Adam with weight_decay parameter, as they differ — explain why in your
 analysis).
 
 **Questions to answer**:
-- At what lambda does test accuracy peak?
-- What happens to training accuracy as lambda increases?
-- Plot weight magnitude distributions for each lambda.
+- At what $\lambda$ does test accuracy peak?
+- What happens to training accuracy as $\lambda$ increases?
+- Plot weight magnitude distributions for each $\lambda$.
 
 ### Experiment 2: Dropout
 
@@ -233,7 +233,7 @@ A 2x2 grid of subplots:
 
 ### Plot 3: L2 Regularization Sweep
 
-Test accuracy vs lambda (log scale x-axis). Mark the optimal lambda.
+Test accuracy vs $\lambda$ (log scale x-axis). Mark the optimal $\lambda$.
 
 ### Plot 4: Dropout Rate Sweep
 
@@ -318,7 +318,7 @@ Write a 2-page analysis (approximately 800-1200 words) addressing:
    standard augmentation.
 
 4. **Label smoothing**: Implement label smoothing (replace hard labels with soft labels:
-   y = (1-epsilon)*y_hard + epsilon/K). Test epsilon in {0.01, 0.05, 0.1, 0.2}.
+   $y = (1 - \epsilon) \cdot y_{\text{hard}} + \epsilon / K$). Test $\epsilon \in \{0.01, 0.05, 0.1, 0.2\}$.
 
 5. **Visualization of learned representations**: Use t-SNE or UMAP to visualize the
    penultimate layer representations for: baseline (overfit), best regularized model.

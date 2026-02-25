@@ -46,7 +46,7 @@ class LinearRegressionGD:
 - Include a bias term (intercept).
 
 **What to demonstrate:**
-- Train on a simple synthetic dataset (e.g., y = 3x + 7 + noise).
+- Train on a simple synthetic dataset (e.g., $y = 3x + 7 + \text{noise}$).
 - Print final weights and bias. They should be close to 3 and 7.
 - Plot the loss curve showing convergence.
 
@@ -107,7 +107,7 @@ class LinearRegressionNormalEquation:
     def fit(self, X, y):
         """
         Solve using the normal equation:
-        w = (X^T X)^{-1} X^T y
+        $\mathbf{w} = (X^T X)^{-1} X^T \mathbf{y}$
 
         Remember to augment X with a column of ones for the bias.
         """
@@ -121,7 +121,7 @@ class LinearRegressionNormalEquation:
 
 Compare the normal equation solution to your gradient descent solution:
 - Do they arrive at the same weights? (They should, within numerical tolerance.)
-- Time both methods for n = 100, n = 10,000, and n = 100,000 samples (with, say, 10 features).
+- Time both methods for $n = 100$, $n = 10{,}000$, and $n = 100{,}000$ samples (with, say, 10 features).
 - Create a table showing wall-clock time for each.
 - Write 2-3 sentences about when you would choose each method.
 
@@ -185,11 +185,11 @@ Answer the following questions in a markdown file or at the end of your notebook
 
 1. Why do we use the *mean* squared error rather than just the *sum* of squared errors? What would change if we used the sum?
 
-2. Gradient descent updates are of the form w := w - lr * gradient. Why do we *subtract* the gradient? What would happen if we added it?
+2. Gradient descent updates are of the form $w := w - \eta \cdot \nabla L$. Why do we *subtract* the gradient? What would happen if we added it?
 
 3. You observed that SGD has a noisier loss curve than batch GD. In deep learning, this noise is sometimes considered *beneficial*. Why might noise in the gradient help training? (Hint: think about the loss landscape of a neural network vs. linear regression.)
 
-4. The normal equation computes (X^T X)^{-1}. When would this matrix be non-invertible? What does that mean about your features?
+4. The normal equation computes $(X^T X)^{-1}$. When would this matrix be non-invertible? What does that mean about your features?
 
 5. You applied feature scaling and observed faster convergence. Give an intuitive geometric explanation for why unscaled features slow down gradient descent. (Hint: think about the shape of the loss contours.)
 
@@ -229,11 +229,11 @@ Submit a Jupyter notebook (or Python script + markdown) containing:
 
 These are optional but strongly recommended if you want to push yourself:
 
-1. **Implement learning rate scheduling.** Start with a larger learning rate and decay it over time (e.g., lr = lr_0 / (1 + decay * epoch)). Show that this combines the speed of a large learning rate with the precision of a small one.
+1. **Implement learning rate scheduling.** Start with a larger learning rate and decay it over time (e.g., $\eta = \eta_0 / (1 + \text{decay} \cdot \text{epoch})$). Show that this combines the speed of a large learning rate with the precision of a small one.
 
-2. **Implement L2 regularization (Ridge Regression).** Add the penalty term lambda * ||w||^2 to your loss function. Derive the new gradient. Show its effect on polynomial regression overfitting.
+2. **Implement L2 regularization (Ridge Regression).** Add the penalty term $\lambda \|\mathbf{w}\|^2$ to your loss function. Derive the new gradient. Show its effect on polynomial regression overfitting.
 
-3. **Implement momentum.** Instead of w := w - lr * gradient, use an exponentially weighted moving average of past gradients. This is the precursor to Adam, the most popular DL optimizer.
+3. **Implement momentum.** Instead of $w := w - \eta \cdot \nabla L$, use an exponentially weighted moving average of past gradients. This is the precursor to Adam, the most popular DL optimizer.
 
 4. **Animate the gradient descent trajectory** on the loss landscape contour plot. Use matplotlib's `FuncAnimation`.
 

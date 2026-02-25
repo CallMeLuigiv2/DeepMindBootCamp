@@ -1,0 +1,68 @@
+# Policy Gradients & PPO Configuration
+# ======================================
+
+# Environment
+env_name: "CartPole-v1"
+seed: 42
+
+# Network architecture
+hidden_dim: 128
+activation: "relu"  # "relu" for A2C, "tanh" for PPO
+
+# REINFORCE
+reinforce:
+  learning_rate: 1e-3
+  gamma: 0.99
+  episodes: 1000
+
+# REINFORCE with Baseline
+reinforce_baseline:
+  lr_policy: 1e-3
+  lr_value: 1e-3
+  gamma: 0.99
+  episodes: 1000
+
+# A2C (Advantage Actor-Critic)
+a2c:
+  learning_rate: 3e-4
+  gamma: 0.99
+  entropy_coeff: 0.01
+  value_loss_coeff: 0.5
+  episodes: 1000
+
+# PPO
+ppo:
+  learning_rate: 2.5e-4
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_ratio: 0.2
+  entropy_coeff: 0.01
+  value_loss_coeff: 0.5
+  max_grad_norm: 0.5
+  n_envs: 8
+  n_steps: 128        # steps per environment per rollout
+  n_epochs: 4         # PPO epochs per rollout
+  mini_batch_size: 32
+  total_timesteps: 100000
+  anneal_lr: true     # linear learning rate annealing
+  hidden_dim: 64
+  activation: "tanh"
+
+# LunarLander-specific PPO overrides
+lunarlander_ppo:
+  total_timesteps: 500000
+  hidden_dim: 128
+  learning_rate: 3e-4
+  n_envs: 8
+  n_steps: 256
+
+# Comparison settings
+comparison:
+  n_seeds: 5
+  smoothing_window: 50
+
+# Logging
+log_interval: 10
+save_interval: 50
+checkpoint_dir: "checkpoints"
+log_dir: "logs"

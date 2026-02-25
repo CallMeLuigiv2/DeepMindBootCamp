@@ -1,0 +1,44 @@
+# Mixed Precision and Quantization - Configuration
+
+# Data
+data:
+  dataset: cifar10
+  batch_size: 128
+  val_split: 0.1
+  num_workers: 4
+  augment: true
+
+# Model
+model:
+  architecture: resnet18
+  num_classes: 10
+
+# Training
+training:
+  num_epochs: 20
+  learning_rate: 0.001
+  optimizer: adamw
+  weight_decay: 0.01
+  lr_scheduler: cosine
+
+# Mixed Precision
+mixed_precision:
+  dtype: float16       # float16 or bfloat16
+  use_grad_scaler: true  # Required for FP16, not needed for BF16
+
+# Quantization
+quantization:
+  calibration_samples: 500
+  dynamic_target_layers: [Linear]
+  static_calibration_sizes: [10, 100, 500]
+
+# Benchmarking
+benchmark:
+  inference_batch_sizes: [1, 8, 32]
+  num_runs: 100
+  warmup_runs: 20
+
+# Logging
+logging:
+  save_dir: checkpoints
+  log_dir: logs

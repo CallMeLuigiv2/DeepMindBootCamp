@@ -1,0 +1,49 @@
+# DQN Configuration
+# =================
+
+# Environment
+env_name: "CartPole-v1"
+seed: 42
+
+# Network architecture
+hidden_dim: 128
+n_hidden_layers: 2
+
+# Training
+episodes: 500
+max_steps_per_episode: 500
+learning_rate: 1e-3
+gamma: 0.99
+batch_size: 64
+
+# Epsilon-greedy exploration schedule
+epsilon_start: 1.0
+epsilon_end: 0.01
+epsilon_decay: 0.995  # multiplicative decay per episode
+
+# Replay buffer
+buffer_size: 100000
+min_buffer_size: 1000  # start updating after this many transitions
+
+# Target network
+target_update_freq: 100  # hard update every N steps
+soft_update: false
+tau: 0.005  # for soft updates
+
+# Double DQN
+use_double_dqn: false
+
+# LunarLander-specific overrides (use with --env LunarLander-v2)
+lunarlander:
+  episodes: 1500
+  hidden_dim: 256
+  learning_rate: 5e-4
+  target_update_freq: 100
+  buffer_size: 100000
+  epsilon_decay: 0.998
+
+# Logging
+log_interval: 10  # print stats every N episodes
+save_interval: 100  # save checkpoint every N episodes
+checkpoint_dir: "checkpoints"
+log_dir: "logs"

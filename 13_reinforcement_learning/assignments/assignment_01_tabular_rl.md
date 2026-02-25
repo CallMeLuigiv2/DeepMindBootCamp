@@ -71,7 +71,7 @@ Add an optional stochastic mode: with probability 0.8, the action succeeds. With
 
 ### 2.1 Value Iteration
 
-Implement Value Iteration to find the optimal value function V* and optimal policy pi*:
+Implement Value Iteration to find the optimal value function $V^*$ and optimal policy $\pi^*$:
 
 ```python
 def value_iteration(env, gamma=0.99, theta=1e-8):
@@ -110,13 +110,13 @@ def policy_iteration(env, gamma=0.99, theta=1e-8):
 
 **Requirements:**
 - Start with a random policy (uniform over actions).
-- Alternate between policy evaluation (solve for V^pi) and policy improvement (make pi greedy w.r.t. V^pi).
+- Alternate between policy evaluation (solve for $V^\pi$) and policy improvement (make $\pi$ greedy w.r.t. $V^\pi$).
 - Stop when the policy does not change.
 - Verify that Value Iteration and Policy Iteration produce the same optimal policy.
 
 ### 2.3 Visualization
 
-- **Value function heatmap**: display V*(s) as a color-coded grid. Cells near the goal should have higher values (less negative).
+- **Value function heatmap**: display $V^*(s)$ as a color-coded grid. Cells near the goal should have higher values (less negative).
 - **Optimal policy arrows**: display the optimal action at each cell as an arrow (up, down, left, right).
 - Use matplotlib for both visualizations.
 
@@ -164,7 +164,7 @@ def train_q_learning(env, agent, n_episodes=5000):
 **Requirements:**
 - Train for 5000 episodes.
 - Track total reward and number of steps per episode.
-- After training, extract the learned policy: pi(s) = argmax_a Q(s, a).
+- After training, extract the learned policy: $\pi(s) = \arg\max_a Q(s, a)$.
 - Compare the learned policy to the optimal policy from Value Iteration. Are they the same?
 
 ### 3.3 Epsilon Decay Analysis
@@ -200,7 +200,7 @@ class SARSAAgent:
         ...
 ```
 
-Note the key difference: SARSA's update method takes `next_action` as an argument, because it uses Q(s', a') instead of max_a' Q(s', a').
+Note the key difference: SARSA's update method takes `next_action` as an argument, because it uses $Q(s', a')$ instead of $\max_{a'} Q(s', a')$.
 
 ### 4.2 The Cliff-Walking Comparison
 
@@ -229,13 +229,13 @@ Train both Q-Learning and SARSA on CliffWorld with epsilon=0.1 (constant -- do n
 ### 5.1 Learned Value Function Heatmap
 
 For Q-Learning's converged Q-table:
-- Compute V(s) = max_a Q(s, a) for each state.
+- Compute $V(s) = \max_a Q(s, a)$ for each state.
 - Display as a heatmap. States near the goal should have high value; states far away should have low value.
-- Compare to the DP-computed V* from Part 2.
+- Compare to the DP-computed $V^*$ from Part 2.
 
 ### 5.2 Learned Policy Arrows
 
-Display the learned policy (argmax_a Q(s,a)) as arrows on the grid. Compare to the DP-computed optimal policy.
+Display the learned policy ($\arg\max_a Q(s,a)$) as arrows on the grid. Compare to the DP-computed optimal policy.
 
 ### 5.3 Learning Dynamics
 
@@ -249,8 +249,8 @@ Write a 300-500 word analysis addressing:
 1. Do Q-Learning and Value Iteration converge to the same policy? Why or why not?
 2. How does the epsilon decay schedule affect convergence speed and final performance?
 3. Why do Q-Learning and SARSA learn different policies on CliffWorld? Which would you prefer in a safety-critical application?
-4. What happens when you increase the learning rate alpha? What happens when you decrease it?
-5. How does the discount factor gamma affect the learned policy?
+4. What happens when you increase the learning rate $\alpha$? What happens when you decrease it?
+5. How does the discount factor $\gamma$ affect the learned policy?
 
 ---
 
@@ -263,14 +263,14 @@ Write a 300-500 word analysis addressing:
 
 ## Evaluation Criteria
 
-- **Correctness** (40%): Value Iteration converges to the correct V*. Q-Learning converges to a near-optimal policy. SARSA shows the expected safe-path behavior on CliffWorld.
+- **Correctness** (40%): Value Iteration converges to the correct $V^*$. Q-Learning converges to a near-optimal policy. SARSA shows the expected safe-path behavior on CliffWorld.
 - **Code quality** (20%): clean, documented code with clear separation of environment, agent, and training loop.
 - **Visualizations** (20%): clear, labeled plots that communicate the learning dynamics effectively.
 - **Analysis** (20%): demonstrates genuine understanding of on-policy vs off-policy, exploration vs exploitation, and the connection between DP and RL.
 
 ## Stretch Goals
 
-1. **TD(lambda)**: implement Q-Learning with eligibility traces. Compare learning speed to standard Q-Learning for different lambda values (0, 0.5, 0.9, 1.0).
+1. **TD($\lambda$)**: implement Q-Learning with eligibility traces. Compare learning speed to standard Q-Learning for different $\lambda$ values (0, 0.5, 0.9, 1.0).
 2. **Taxi-v3**: apply your Q-Learning agent to the Gymnasium Taxi-v3 environment. This is a larger state space (500 states) and requires discovering a multi-step strategy (pick up passenger, drive to destination, drop off). Report learning curves and final success rate.
 3. **Expected SARSA**: implement Expected SARSA (use expected Q-value under the policy instead of a single sample). Compare to SARSA and Q-Learning. Expected SARSA should have lower variance than SARSA.
 4. **Visualization of Q-value convergence**: create an animation showing how Q-values evolve over training episodes. Use matplotlib animation.

@@ -1,0 +1,55 @@
+# Classic Architectures -- Per-Architecture Configs
+
+# Shared training settings (for fair comparison in Part 4)
+training:
+  epochs: 150
+  batch_size: 128
+  optimizer: "sgd"
+  learning_rate: 0.1
+  momentum: 0.9
+  weight_decay: 0.0005
+  scheduler: "multistep"
+  milestones: [80, 120]
+  gamma: 0.1
+  seed: 42
+
+data:
+  dataset: "cifar10"
+  val_split: 0.1
+  num_workers: 2
+  augment: true
+
+architectures:
+  lenet5:
+    num_classes: 10
+    description: "LeNet-5 adapted for CIFAR-10 (3-channel input)"
+
+  vgg11:
+    num_classes: 10
+    use_gap: true  # Global Average Pooling variant (lighter)
+    description: "VGG-11 with BatchNorm, GAP classifier"
+
+  vgg11_fc:
+    num_classes: 10
+    use_gap: false  # Full FC classifier
+    description: "VGG-11 with BatchNorm, full FC layers (~28M params)"
+
+  resnet18:
+    num_classes: 10
+    description: "ResNet-18 adapted for CIFAR-10 (3x3 stem, no maxpool)"
+
+  plainnet18:
+    num_classes: 10
+    description: "PlainNet-18 (ResNet-18 without skip connections)"
+
+# LeNet-specific training (Part 1 -- MNIST)
+lenet_mnist:
+  epochs: 10
+  batch_size: 64
+  optimizer: "sgd"
+  learning_rate: 0.01
+  momentum: 0.9
+
+output:
+  save_dir: "checkpoints"
+  log_dir: "runs"

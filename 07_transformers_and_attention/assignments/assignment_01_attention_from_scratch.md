@@ -101,7 +101,7 @@ class MultiHeadAttention(nn.Module):
 
 1. **Shape test**: d_model=512, num_heads=8. Input (4, 20, 512). Output should be (4, 20, 512).
 
-2. **Parameter count**: verify your module has exactly 4 * d_model^2 parameters (no biases). For d_model=512: 1,048,576 parameters.
+2. **Parameter count**: verify your module has exactly $4 \cdot d_\text{model}^2$ parameters (no biases). For $d_\text{model}=512$: 1,048,576 parameters.
 
 3. **Self-attention test**: call with query=key=value=x. Verify it runs without error and produces the correct output shape.
 
@@ -308,7 +308,7 @@ For those who want to push further:
 
 2. **Additive (Bahdanau) Attention**: implement the original additive attention mechanism and compare it to dot-product attention on the copy task. Is one faster to converge? Is one more expressive?
 
-3. **Linear Attention**: implement attention with a kernel approximation (e.g., using random features) that avoids the softmax and achieves O(n) complexity. Compare quality vs speed against standard attention.
+3. **Linear Attention**: implement attention with a kernel approximation (e.g., using random features) that avoids the softmax and achieves $O(n)$ complexity. Compare quality vs speed against standard attention.
 
 4. **Attention with Relative Position Bias**: add a learnable relative position bias to your attention scores (as in T5 or ALiBi). Show that this improves performance on a task where position matters.
 
@@ -316,7 +316,7 @@ For those who want to push further:
 
 ## Common Pitfalls
 
-1. **Forgetting to scale**: without dividing by sqrt(d_k), training will be unstable. If your loss is not decreasing, check this first.
+1. **Forgetting to scale**: without dividing by $\sqrt{d_k}$, training will be unstable. If your loss is not decreasing, check this first.
 
 2. **Wrong mask convention**: some implementations use True for "attend" and False for "mask." Others use the opposite. Be consistent and document your convention.
 

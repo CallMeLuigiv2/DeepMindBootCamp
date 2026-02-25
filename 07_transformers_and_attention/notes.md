@@ -42,21 +42,25 @@ But Bahdanau attention is cross-attention: queries from one sequence, keys and v
 
 **Bahdanau Attention:**
 
-```
-e_{ij} = a(s_{i-1}, h_j)                    # alignment score
-alpha_{ij} = softmax_j(e_{ij})               # attention weight
-c_i = sum_j(alpha_{ij} * h_j)               # context vector
-```
+$$
+\begin{aligned}
+e_{ij} &= a(s_{i-1},\, h_j) & \text{(alignment score)} \\
+\alpha_{ij} &= \text{softmax}_j(e_{ij}) & \text{(attention weight)} \\
+c_i &= \sum_j \alpha_{ij} \cdot h_j & \text{(context vector)}
+\end{aligned}
+$$
 
-Where s_{i-1} is the decoder hidden state, h_j is the j-th encoder hidden state, and a() is a learned alignment function (typically a small MLP).
+Where $s_{i-1}$ is the decoder hidden state, $h_j$ is the $j$-th encoder hidden state, and $a(\cdot)$ is a learned alignment function (typically a small MLP).
 
 **Self-Attention (simplified):**
 
-```
-e_{ij} = x_i^T * x_j                        # dot-product similarity
-alpha_{ij} = softmax_j(e_{ij})               # attention weight
-z_i = sum_j(alpha_{ij} * x_j)               # output
-```
+$$
+\begin{aligned}
+e_{ij} &= x_i^\top \cdot x_j & \text{(dot-product similarity)} \\
+\alpha_{ij} &= \text{softmax}_j(e_{ij}) & \text{(attention weight)} \\
+z_i &= \sum_j \alpha_{ij} \cdot x_j & \text{(output)}
+\end{aligned}
+$$
 
 The key innovation of Vaswani et al. was to separate the roles of each token into three learned projections: Query, Key, and Value.
 
@@ -87,66 +91,64 @@ Q, K, and V are different linear projections of the same input — the model lea
 
 ### The Math
 
-Given input X of shape (seq_len, d_model):
+Given input $X$ of shape (seq_len, $d_\text{model}$):
 
-```
-Q = X @ W_Q    # (seq_len, d_k)
-K = X @ W_K    # (seq_len, d_k)
-V = X @ W_V    # (seq_len, d_v)
-```
+$$
+Q = X W_Q, \quad K = X W_K, \quad V = X W_V
+$$
 
-Where W_Q is (d_model, d_k), W_K is (d_model, d_k), W_V is (d_model, d_v).
+Where $W_Q \in \mathbb{R}^{d_\text{model} \times d_k}$, $W_K \in \mathbb{R}^{d_\text{model} \times d_k}$, $W_V \in \mathbb{R}^{d_\text{model} \times d_v}$.
 
 The attention function:
 
-```
-Attention(Q, K, V) = softmax(Q @ K^T / sqrt(d_k)) @ V
-```
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V
+$$
 
 Step by step:
 
-1. **Compute similarity scores**: `S = Q @ K^T`
-   - Shape: (seq_len, d_k) @ (d_k, seq_len) = (seq_len, seq_len)
-   - S[i][j] = dot product of query_i and key_j = how much token i should attend to token j
+1. **Compute similarity scores**: $S = Q K^\top$
+   - Shape: (seq_len, $d_k$) @ ($d_k$, seq_len) = (seq_len, seq_len)
+   - $S[i][j]$ = dot product of $\text{query}_i$ and $\text{key}_j$ = how much token $i$ should attend to token $j$
    - This single matrix multiplication computes ALL pairwise similarities at once
 
-2. **Scale**: `S_scaled = S / sqrt(d_k)`
+2. **Scale**: $S_\text{scaled} = S / \sqrt{d_k}$
    - Why? See the variance argument below.
 
-3. **Softmax**: `A = softmax(S_scaled, dim=-1)`
+3. **Softmax**: $A = \text{softmax}(S_\text{scaled}, \text{dim}=-1)$
    - Shape: (seq_len, seq_len)
    - Each row sums to 1
-   - A[i][j] = the attention weight that token i places on token j
+   - $A[i][j]$ = the attention weight that token $i$ places on token $j$
 
-4. **Weighted sum of values**: `output = A @ V`
-   - Shape: (seq_len, seq_len) @ (seq_len, d_v) = (seq_len, d_v)
-   - output[i] = weighted average of all value vectors, weighted by attention weights from token i
+4. **Weighted sum of values**: $\text{output} = A V$
+   - Shape: (seq_len, seq_len) @ (seq_len, $d_v$) = (seq_len, $d_v$)
+   - $\text{output}[i]$ = weighted average of all value vectors, weighted by attention weights from token $i$
 
-### Why We Scale by sqrt(d_k) — The Variance Argument
+### Why We Scale by $\sqrt{d_k}$ — The Variance Argument
 
 This is not a minor detail. It is essential for training stability.
 
-Assume q and k are vectors of dimension d_k, where each component is drawn independently from a distribution with mean 0 and variance 1. The dot product is:
+Assume $q$ and $k$ are vectors of dimension $d_k$, where each component is drawn independently from a distribution with mean 0 and variance 1. The dot product is:
 
-```
-q . k = sum_{i=1}^{d_k} q_i * k_i
-```
+$$
+q \cdot k = \sum_{i=1}^{d_k} q_i \cdot k_i
+$$
 
-Each term q_i * k_i has:
-- E[q_i * k_i] = E[q_i] * E[k_i] = 0 * 0 = 0
-- Var(q_i * k_i) = E[q_i^2] * E[k_i^2] = 1 * 1 = 1
+Each term $q_i \cdot k_i$ has:
+- $\mathbb{E}[q_i \cdot k_i] = \mathbb{E}[q_i] \cdot \mathbb{E}[k_i] = 0 \times 0 = 0$
+- $\text{Var}(q_i \cdot k_i) = \mathbb{E}[q_i^2] \cdot \mathbb{E}[k_i^2] = 1 \times 1 = 1$
 
 Since the terms are independent:
-- E[q . k] = 0
-- Var(q . k) = d_k
+- $\mathbb{E}[q \cdot k] = 0$
+- $\text{Var}(q \cdot k) = d_k$
 
-So the standard deviation of the dot product is sqrt(d_k). For d_k = 64 (typical), the dot products have standard deviation 8. Values of 8 or -8 push the softmax deep into saturation, where:
+So the standard deviation of the dot product is $\sqrt{d_k}$. For $d_k = 64$ (typical), the dot products have standard deviation 8. Values of 8 or -8 push the softmax deep into saturation, where:
 
 ```
 softmax([8, 0, 0, 0]) ~= [0.9997, 0.0001, 0.0001, 0.0001]
 ```
 
-The gradients of saturated softmax are near zero — training stalls. By dividing by sqrt(d_k), we normalize the variance back to 1, keeping the softmax in a well-behaved regime:
+The gradients of saturated softmax are near zero — training stalls. By dividing by $\sqrt{d_k}$, we normalize the variance back to 1, keeping the softmax in a well-behaved regime:
 
 ```
 softmax([1, 0, 0, 0]) ~= [0.46, 0.18, 0.18, 0.18]
@@ -156,7 +158,7 @@ Gradients flow freely. Training proceeds.
 
 ### Complete Worked Example
 
-Let us work through attention with actual numbers. We have 3 tokens, d_k = d_v = 4.
+Let us work through attention with actual numbers. We have 3 tokens, $d_k = d_v = 4$.
 
 **Input representations (after projection):**
 
@@ -174,7 +176,7 @@ V = [[1, 0, 0, 1],    # Token 0's value
      [1, 1, 0, 0]]    # Token 2's value
 ```
 
-**Step 1: Compute Q @ K^T**
+**Step 1: Compute $Q K^\top$**
 
 ```
 S = Q @ K^T
@@ -196,7 +198,7 @@ S = [[1, 1, 2],
      [2, 0, 1]]
 ```
 
-**Step 2: Scale by sqrt(d_k) = sqrt(4) = 2**
+**Step 2: Scale by $\sqrt{d_k} = \sqrt{4} = 2$**
 
 ```
 S_scaled = [[0.50, 0.50, 1.00],
@@ -302,45 +304,48 @@ Think of it as convening a panel of h experts, each examining the same data but 
 
 ### The Math
 
-Given input X of shape (seq_len, d_model), with h heads:
+Given input $X$ of shape (seq_len, $d_\text{model}$), with $h$ heads:
 
-```
-d_k = d_v = d_model / h
-```
+$$
+d_k = d_v = d_\text{model} / h
+$$
 
-For each head i (i = 1, ..., h):
+For each head $i$ ($i = 1, \ldots, h$):
 
-```
-Q_i = X @ W_Q^i    # (seq_len, d_k),   W_Q^i is (d_model, d_k)
-K_i = X @ W_K^i    # (seq_len, d_k),   W_K^i is (d_model, d_k)
-V_i = X @ W_V^i    # (seq_len, d_v),   W_V^i is (d_model, d_v)
+$$
+\begin{aligned}
+Q_i &= X W_Q^i, \quad K_i = X W_K^i, \quad V_i = X W_V^i \\
+\text{head}_i &= \text{Attention}(Q_i,\, K_i,\, V_i)
+\end{aligned}
+$$
 
-head_i = Attention(Q_i, K_i, V_i)    # (seq_len, d_v)
-```
+Where $W_Q^i, W_K^i \in \mathbb{R}^{d_\text{model} \times d_k}$ and $W_V^i \in \mathbb{R}^{d_\text{model} \times d_v}$.
 
 Concatenate all heads and project:
 
-```
-MultiHead(X) = Concat(head_1, ..., head_h) @ W_O
-             = (seq_len, h * d_v) @ (h * d_v, d_model)
-             = (seq_len, d_model)
-```
+$$
+\text{MultiHead}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)\, W_O
+$$
+
+Shape: (seq_len, $h \cdot d_v$) @ ($h \cdot d_v$, $d_\text{model}$) = (seq_len, $d_\text{model}$).
 
 **Parameter count for multi-head attention:**
 
-```
-W_Q: h * (d_model * d_k) = h * (d_model * d_model/h) = d_model^2
-W_K: d_model^2
-W_V: d_model^2
-W_O: d_model^2
-Total: 4 * d_model^2
-```
+$$
+\begin{aligned}
+W_Q &: h \times (d_\text{model} \times d_k) = d_\text{model}^2 \\
+W_K &: d_\text{model}^2 \\
+W_V &: d_\text{model}^2 \\
+W_O &: d_\text{model}^2 \\
+\text{Total} &: 4 \cdot d_\text{model}^2
+\end{aligned}
+$$
 
-For d_model = 512: 4 * 512^2 = 1,048,576 parameters per multi-head attention layer.
+For $d_\text{model} = 512$: $4 \times 512^2 = 1{,}048{,}576$ parameters per multi-head attention layer.
 
-Note: the total parameter count is the SAME as a single-head attention with full d_model dimensions for Q, K, V. Multi-head attention does not add parameters — it restructures the computation to enable parallel, specialized attention patterns.
+Note: the total parameter count is the SAME as a single-head attention with full $d_\text{model}$ dimensions for Q, K, V. Multi-head attention does not add parameters — it restructures the computation to enable parallel, specialized attention patterns.
 
-### Explicit Parameter Dimensions (d_model=512, h=8)
+### Explicit Parameter Dimensions ($d_\text{model}=512$, $h=8$)
 
 ```
 d_k = d_v = 512 / 8 = 64
@@ -479,29 +484,33 @@ We must explicitly inject position information. There are three major approaches
 
 ### The Math — Sinusoidal Encoding
 
-For position pos and dimension i:
+For position $\text{pos}$ and dimension $i$:
 
-```
-PE(pos, 2i)   = sin(pos / 10000^(2i / d_model))
-PE(pos, 2i+1) = cos(pos / 10000^(2i / d_model))
-```
+$$
+\begin{aligned}
+PE(\text{pos},\, 2i) &= \sin\!\left(\text{pos}\, / \, 10000^{2i / d_\text{model}}\right) \\
+PE(\text{pos},\, 2i+1) &= \cos\!\left(\text{pos}\, / \, 10000^{2i / d_\text{model}}\right)
+\end{aligned}
+$$
 
-The encoding for each position is a d_model-dimensional vector. Different dimensions oscillate at different frequencies:
-- Dimension 0-1: frequency = 1 (wavelength = 2*pi positions, changes rapidly)
-- Dimension 2-3: frequency = 1/10000^(2/d_model) (slightly slower)
+The encoding for each position is a $d_\text{model}$-dimensional vector. Different dimensions oscillate at different frequencies:
+- Dimension 0-1: frequency = 1 (wavelength = $2\pi$ positions, changes rapidly)
+- Dimension 2-3: frequency = $1/10000^{2/d_\text{model}}$ (slightly slower)
 - ...
-- Dimension d_model-2, d_model-1: frequency = 1/10000 (very slow, wavelength ~ 63,000 positions)
+- Dimension $d_\text{model}-2$, $d_\text{model}-1$: frequency = $1/10000$ (very slow, wavelength ~ 63,000 positions)
 
 **The Fourier Intuition**: each pair of dimensions encodes position at a different "resolution." Low-indexed dimensions capture fine-grained position differences (nearby tokens have different encodings). High-indexed dimensions capture coarse position (only very distant tokens differ). Together, they create a unique fingerprint for each position — much like how a number can be uniquely represented in binary (each bit oscillates at a different frequency).
 
-**The Relative Position Argument**: for any fixed offset k, there exists a linear transformation M_k such that PE(pos + k) = M_k * PE(pos). This is because:
+**The Relative Position Argument**: for any fixed offset $k$, there exists a linear transformation $M_k$ such that $PE(\text{pos} + k) = M_k \cdot PE(\text{pos})$. This is because:
 
-```
-sin(a + b) = sin(a)cos(b) + cos(a)sin(b)
-cos(a + b) = cos(a)cos(b) - sin(a)sin(b)
-```
+$$
+\begin{aligned}
+\sin(a + b) &= \sin(a)\cos(b) + \cos(a)\sin(b) \\
+\cos(a + b) &= \cos(a)\cos(b) - \sin(a)\sin(b)
+\end{aligned}
+$$
 
-So a relative shift by k positions corresponds to a rotation in each sin/cos pair. The model can learn to detect relative positions through linear operations on the encodings.
+So a relative shift by $k$ positions corresponds to a rotation in each sin/cos pair. The model can learn to detect relative positions through linear operations on the encodings.
 
 ### Encoding Matrix for 10 Positions, d_model = 8
 
@@ -528,22 +537,21 @@ Notice:
 
 ### Learned Positional Embeddings
 
-BERT and GPT simply learn a matrix of shape (max_seq_len, d_model). Position i gets embedding E_pos[i]. Simple, effective, but cannot generalize beyond the maximum sequence length seen during training.
+BERT and GPT simply learn a matrix of shape (max_seq_len, $d_\text{model}$). Position $i$ gets embedding $E_\text{pos}[i]$. Simple, effective, but cannot generalize beyond the maximum sequence length seen during training.
 
 ### Rotary Positional Embeddings (RoPE)
 
-RoPE encodes position by rotating the query and key vectors. For a 2D subspace (dimensions 2i and 2i+1), apply a rotation by angle m * theta_i, where m is the position and theta_i = 10000^(-2i/d):
+RoPE encodes position by rotating the query and key vectors. For a 2D subspace (dimensions $2i$ and $2i+1$), apply a rotation by angle $m \cdot \theta_i$, where $m$ is the position and $\theta_i = 10000^{-2i/d}$:
 
-```
-[q_{2i}' ]   [cos(m*theta_i)  -sin(m*theta_i)] [q_{2i} ]
-[q_{2i+1}'] = [sin(m*theta_i)   cos(m*theta_i)] [q_{2i+1}]
-```
+$$
+\begin{bmatrix} q'_{2i} \\ q'_{2i+1} \end{bmatrix} = \begin{bmatrix} \cos(m\theta_i) & -\sin(m\theta_i) \\ \sin(m\theta_i) & \cos(m\theta_i) \end{bmatrix} \begin{bmatrix} q_{2i} \\ q_{2i+1} \end{bmatrix}
+$$
 
-The inner product of rotated q at position m and rotated k at position n depends only on m - n (the relative position):
+The inner product of rotated $q$ at position $m$ and rotated $k$ at position $n$ depends only on $m - n$ (the relative position):
 
-```
-<q_m', k_n'> = <R(m)*q, R(n)*k> = <q, R(m-n)*k>
-```
+$$
+\langle q'_m,\, k'_n \rangle = \langle R(m)\, q,\, R(n)\, k \rangle = \langle q,\, R(m-n)\, k \rangle
+$$
 
 This gives relative position encoding without any additional parameters. RoPE is used in LLaMA, GPT-NeoX, PaLM, and most modern LLMs.
 
@@ -668,28 +676,34 @@ Both sub-layers use residual connections and layer normalization. The residual c
 
 ### The Math
 
-Input: x of shape (batch, seq_len, d_model)
+Input: $x$ of shape (batch, seq_len, $d_\text{model}$)
 
 **Sub-layer 1: Multi-Head Self-Attention + Add & Norm**
-```
-attn_output = MultiHeadAttention(x, x, x)       # Q=K=V=x (self-attention)
-x = LayerNorm(x + attn_output)                   # Residual + Norm
-```
+
+$$
+\begin{aligned}
+\text{attn\_output} &= \text{MultiHeadAttention}(x, x, x) \quad \text{(Q=K=V=x, self-attention)} \\
+x &= \text{LayerNorm}(x + \text{attn\_output}) \quad \text{(Residual + Norm)}
+\end{aligned}
+$$
 
 **Sub-layer 2: Feed-Forward Network + Add & Norm**
-```
-ffn_output = FFN(x) = max(0, x @ W_1 + b_1) @ W_2 + b_2
-x = LayerNorm(x + ffn_output)                    # Residual + Norm
-```
+
+$$
+\begin{aligned}
+\text{FFN}(x) &= \max(0,\, x W_1 + b_1)\, W_2 + b_2 \\
+x &= \text{LayerNorm}(x + \text{FFN}(x)) \quad \text{(Residual + Norm)}
+\end{aligned}
+$$
 
 FFN dimensions:
-- W_1: (d_model, d_ff), typically d_ff = 4 * d_model
-- W_2: (d_ff, d_model)
+- $W_1 \in \mathbb{R}^{d_\text{model} \times d_{ff}}$, typically $d_{ff} = 4 \cdot d_\text{model}$
+- $W_2 \in \mathbb{R}^{d_{ff} \times d_\text{model}}$
 - This is applied position-wise: the same FFN is applied independently to each position
 
 ### Walk-Through With Explicit Tensor Shapes
 
-Configuration: batch_size=2, seq_len=10, d_model=512, d_ff=2048, num_heads=8, d_k=64
+Configuration: batch_size=2, seq_len=10, $d_\text{model}$=512, $d_{ff}$=2048, num_heads=8, $d_k$=64
 
 ```
 Input x:                          (2, 10, 512)
@@ -734,9 +748,9 @@ The output shape is identical to the input shape. Encoder blocks are stackable.
 
 ### Pre-Norm vs Post-Norm
 
-The original Transformer uses Post-Norm: `LayerNorm(x + SubLayer(x))`.
+The original Transformer uses Post-Norm: $\text{LayerNorm}(x + \text{SubLayer}(x))$.
 
-Many modern implementations use Pre-Norm: `x + SubLayer(LayerNorm(x))`.
+Many modern implementations use Pre-Norm: $x + \text{SubLayer}(\text{LayerNorm}(x))$.
 
 Pre-Norm places the LayerNorm before the sub-layer, which makes the residual connection a clean identity path. This stabilizes training for deep models (no need for warmup in some cases) but may slightly reduce final performance. Most LLMs (GPT-3, LLaMA, PaLM) use Pre-Norm.
 
@@ -821,26 +835,35 @@ This gives the decoder three sub-layers:
 
 ### The Math
 
-Input: y (decoder input) of shape (batch, tgt_len, d_model)
-Encoder output: enc_out of shape (batch, src_len, d_model)
+Input: $y$ (decoder input) of shape (batch, tgt_len, $d_\text{model}$)
+Encoder output: $\text{enc\_out}$ of shape (batch, src_len, $d_\text{model}$)
 
 **Sub-layer 1: Masked Multi-Head Self-Attention + Add & Norm**
-```
-attn_output = MultiHeadAttention(y, y, y, mask=causal_mask)  # Q=K=V=y, with causal mask
-y = LayerNorm(y + attn_output)
-```
+
+$$
+\begin{aligned}
+\text{attn\_output} &= \text{MultiHeadAttention}(y, y, y, \text{mask}=\text{causal\_mask}) \\
+y &= \text{LayerNorm}(y + \text{attn\_output})
+\end{aligned}
+$$
 
 **Sub-layer 2: Cross-Attention + Add & Norm**
-```
-cross_output = MultiHeadAttention(y, enc_out, enc_out)  # Q=y, K=V=encoder output
-y = LayerNorm(y + cross_output)
-```
+
+$$
+\begin{aligned}
+\text{cross\_output} &= \text{MultiHeadAttention}(y, \text{enc\_out}, \text{enc\_out}) \\
+y &= \text{LayerNorm}(y + \text{cross\_output})
+\end{aligned}
+$$
 
 **Sub-layer 3: Feed-Forward + Add & Norm**
-```
-ffn_output = FFN(y)
-y = LayerNorm(y + ffn_output)
-```
+
+$$
+\begin{aligned}
+\text{ffn\_output} &= \text{FFN}(y) \\
+y &= \text{LayerNorm}(y + \text{ffn\_output})
+\end{aligned}
+$$
 
 ### Code
 
@@ -1050,45 +1073,37 @@ Note: in the original paper, source and target embeddings and the output project
 
 ### Intuition
 
-In autoregressive generation, when predicting token t, the model should only see tokens 1 through t-1 — not tokens t+1 onward (that would be cheating; those tokens have not been generated yet). During training with teacher forcing, we process all positions in parallel but must still prevent each position from attending to future positions.
+In autoregressive generation, when predicting token $t$, the model should only see tokens $1$ through $t-1$ — not tokens $t+1$ onward (that would be cheating; those tokens have not been generated yet). During training with teacher forcing, we process all positions in parallel but must still prevent each position from attending to future positions.
 
-The solution: add a mask to the attention scores before softmax. Positions that should not be attended to get a score of negative infinity. After softmax, exp(-inf) = 0, so those positions contribute nothing to the weighted sum.
+The solution: add a mask to the attention scores before softmax. Positions that should not be attended to get a score of $-\infty$. After softmax, $\exp(-\infty) = 0$, so those positions contribute nothing to the weighted sum.
 
 ### The Math
 
-For a sequence of length n, the causal mask is an upper-triangular matrix:
+For a sequence of length $n$, the causal mask is an upper-triangular matrix:
 
-```
-mask = [[0, -inf, -inf, -inf, -inf],
-        [0,  0,   -inf, -inf, -inf],
-        [0,  0,    0,   -inf, -inf],
-        [0,  0,    0,    0,   -inf],
-        [0,  0,    0,    0,    0  ]]
-```
+$$
+\text{mask} = \begin{bmatrix} 0 & -\infty & -\infty & -\infty & -\infty \\ 0 & 0 & -\infty & -\infty & -\infty \\ 0 & 0 & 0 & -\infty & -\infty \\ 0 & 0 & 0 & 0 & -\infty \\ 0 & 0 & 0 & 0 & 0 \end{bmatrix}
+$$
 
-Position i can attend to positions j where j <= i (lower triangle + diagonal).
+Position $i$ can attend to positions $j$ where $j \leq i$ (lower triangle + diagonal).
 
 After adding the mask to the attention scores:
 
-```
-masked_scores[i][j] = scores[i][j] + mask[i][j]
-                     = scores[i][j]     if j <= i  (mask is 0)
-                     = -inf              if j > i   (mask is -inf)
-```
+$$
+\text{masked\_scores}[i][j] = \begin{cases} \text{scores}[i][j] & \text{if } j \leq i \quad (\text{mask is } 0) \\ -\infty & \text{if } j > i \quad (\text{mask is } -\infty) \end{cases}
+$$
 
 After softmax:
 
-```
-attention_weights[i][j] = softmax(masked_scores[i])[j]
-                        = 0              if j > i   (exp(-inf) = 0)
-                        = proportional to exp(scores[i][j])  if j <= i
-```
+$$
+\text{attention\_weights}[i][j] = \begin{cases} 0 & \text{if } j > i \quad (\exp(-\infty) = 0) \\ \propto \exp(\text{scores}[i][j]) & \text{if } j \leq i \end{cases}
+$$
 
 **Why -inf works and not just 0 or a large negative number:**
 
-Using 0 does not work — the softmax would still assign non-zero weight to future positions. Using a large negative number (like -1e9) works in practice but is not as clean. Using -inf is mathematically exact: exp(-inf) = 0, guaranteeing that future positions get exactly zero attention weight.
+Using 0 does not work — the softmax would still assign non-zero weight to future positions. Using a large negative number (like $-10^9$) works in practice but is not as clean. Using $-\infty$ is mathematically exact: $\exp(-\infty) = 0$, guaranteeing that future positions get exactly zero attention weight.
 
-In PyTorch, `float('-inf')` is a valid float value. Softmax handles it correctly: if all inputs to softmax are -inf, the output is uniform (NaN in theory, but PyTorch handles it). In practice, at least one non-masked position always exists (the current position can attend to itself).
+In PyTorch, `float('-inf')` is a valid float value. Softmax handles it correctly: if all inputs to softmax are $-\infty$, the output is uniform (NaN in theory, but PyTorch handles it). In practice, at least one non-masked position always exists (the current position can attend to itself).
 
 ### Code
 
@@ -1161,17 +1176,17 @@ The upper-right triangle is always exactly zero.
 
 ### 9.1 Autoregressive Language Modeling (GPT-style)
 
-**Intuition**: predict the next word given all previous words. The model learns the distribution P(x_t | x_1, ..., x_{t-1}).
+**Intuition**: predict the next word given all previous words. The model learns the distribution $P(x_t \mid x_1, \ldots, x_{t-1})$.
 
 **The Math**:
 
 Loss function (cross-entropy over the vocabulary at each position):
 
-```
-L = -1/T * sum_{t=1}^{T} log P(x_t | x_1, ..., x_{t-1})
-```
+$$
+\mathcal{L} = -\frac{1}{T} \sum_{t=1}^{T} \log P(x_t \mid x_1, \ldots, x_{t-1})
+$$
 
-The model uses causal masking to ensure position t only sees positions 1 through t-1. During training, all positions are computed in parallel (teacher forcing). During inference, tokens are generated one at a time.
+The model uses causal masking to ensure position $t$ only sees positions $1$ through $t-1$. During training, all positions are computed in parallel (teacher forcing). During inference, tokens are generated one at a time.
 
 ### 9.2 Masked Language Modeling (BERT-style)
 
@@ -1183,11 +1198,11 @@ The model uses causal masking to ensure position t only sees positions 1 through
 2. Of selected tokens: 80% are replaced with [MASK], 10% with a random token, 10% unchanged
 3. Loss = cross-entropy only at the masked positions:
 
-```
-L = -1/|M| * sum_{t in M} log P(x_t | x_{\M})
-```
+$$
+\mathcal{L} = -\frac{1}{|M|} \sum_{t \in M} \log P(x_t \mid x_{\setminus M})
+$$
 
-Where M is the set of masked positions and x_{\M} means all tokens except the masked ones.
+Where $M$ is the set of masked positions and $x_{\setminus M}$ means all tokens except the masked ones.
 
 The 80/10/10 split is important: if we always used [MASK], the model would never see [MASK] during fine-tuning, creating a train-test mismatch. The random token replacement and identity ensure the model cannot simply learn to ignore [MASK] tokens.
 
@@ -1197,11 +1212,11 @@ The 80/10/10 split is important: if we always used [MASK], the model would never
 
 **The Noam Schedule** (from the original Transformer paper):
 
-```
-lr = d_model^(-0.5) * min(step_num^(-0.5), step_num * warmup_steps^(-1.5))
-```
+$$
+\text{lr} = d_\text{model}^{-0.5} \cdot \min\!\left(\text{step}^{-0.5},\; \text{step} \cdot \text{warmup\_steps}^{-1.5}\right)
+$$
 
-This increases linearly for the first `warmup_steps` steps, then decays proportionally to the inverse square root of the step number. Peak learning rate occurs at `step_num = warmup_steps`.
+This increases linearly for the first `warmup_steps` steps, then decays proportionally to the inverse square root of the step number. Peak learning rate occurs at $\text{step} = \text{warmup\_steps}$.
 
 ```python
 class NoamScheduler:
@@ -1229,36 +1244,38 @@ class NoamScheduler:
 
 **The Math**:
 
-With label smoothing parameter epsilon:
+With label smoothing parameter $\epsilon$:
 
-```
-y_smooth[i] = (1 - epsilon) * y_onehot[i] + epsilon / V
+$$
+y_\text{smooth}[i] = (1 - \epsilon) \cdot y_\text{onehot}[i] + \frac{\epsilon}{V}
+$$
 
-where V is the vocabulary size and y_onehot is the standard one-hot target.
-```
+where $V$ is the vocabulary size and $y_\text{onehot}$ is the standard one-hot target.
 
-For epsilon = 0.1 and V = 10000, the correct class gets weight 0.9 and each incorrect class gets weight 0.1/10000 = 0.00001.
+For $\epsilon = 0.1$ and $V = 10000$, the correct class gets weight 0.9 and each incorrect class gets weight $0.1 / 10000 = 0.00001$.
 
 Cross-entropy with smoothed labels:
 
-```
-L = -sum_i y_smooth[i] * log(p[i])
-  = -(1-epsilon) * log(p[correct]) - epsilon/V * sum_i log(p[i])
-  = (1-epsilon) * H(y, p) + epsilon * H(u, p)
-```
+$$
+\begin{aligned}
+\mathcal{L} &= -\sum_i y_\text{smooth}[i] \cdot \log p[i] \\
+&= -(1 - \epsilon) \cdot \log p[\text{correct}] - \frac{\epsilon}{V} \sum_i \log p[i] \\
+&= (1 - \epsilon) \cdot H(y, p) + \epsilon \cdot H(u, p)
+\end{aligned}
+$$
 
-Where H(y, p) is the standard cross-entropy and H(u, p) is the cross-entropy with a uniform distribution.
+Where $H(y, p)$ is the standard cross-entropy and $H(u, p)$ is the cross-entropy with a uniform distribution.
 
 ### 9.5 The FFN as Key-Value Memories
 
 **Intuition**: Geva et al. (2021) showed that FFN layers in Transformers can be interpreted as unnormalized key-value memories:
 
-```
-FFN(x) = ReLU(x @ W_1) @ W_2
-```
+$$
+\text{FFN}(x) = \text{ReLU}(x\, W_1)\, W_2
+$$
 
-- W_1 rows are "keys" — they match specific input patterns (activating for certain token/context combinations)
-- W_2 columns are "values" — they encode the knowledge that should be added to the representation when the corresponding key matches
+- $W_1$ rows are "keys" — they match specific input patterns (activating for certain token/context combinations)
+- $W_2$ columns are "values" — they encode the knowledge that should be added to the representation when the corresponding key matches
 - ReLU acts as a sparse selection mechanism — only keys that match (positive activation) contribute
 
 This means factual knowledge in language models (e.g., "Paris is the capital of France") is stored in the FFN weights. Editing these weights can modify the model's factual knowledge.
@@ -1280,9 +1297,9 @@ The standard way to think about a Transformer: data flows through a pipeline of 
 
 The residual stream view (Elhage et al., 2021, Anthropic): instead of a pipeline, think of a shared communication channel — the residual stream. Each attention head and MLP layer READS from this stream, performs a computation, and WRITES (adds) its result back to the stream. The final output is the accumulated sum of the initial embedding plus all the additions from every layer.
 
-```
-x_final = x_0 + attn_1(x_0) + mlp_1(x_0 + attn_1(x_0)) + attn_2(...) + mlp_2(...) + ...
-```
+$$
+x_\text{final} = x_0 + \text{attn}_1(x_0) + \text{mlp}_1(x_0 + \text{attn}_1(x_0)) + \text{attn}_2(\ldots) + \text{mlp}_2(\ldots) + \ldots
+$$
 
 **Why this view is powerful:**
 
@@ -1296,24 +1313,24 @@ x_final = x_0 + attn_1(x_0) + mlp_1(x_0 + attn_1(x_0)) + attn_2(...) + mlp_2(...
 
 ### The Math
 
-For a Transformer with L layers, each containing an attention sublayer and an MLP sublayer:
+For a Transformer with $L$ layers, each containing an attention sublayer and an MLP sublayer:
 
-```
-x_0 = embedding + positional_encoding
-
-For l = 1 to L:
-    x_l' = x_{l-1} + Attention_l(x_{l-1})     # attention reads and writes
-    x_l  = x_l'    + MLP_l(x_l')               # MLP reads and writes
-
-output = LayerNorm(x_L)
-logits = x_L @ W_unembed
-```
+$$
+\begin{aligned}
+x_0 &= \text{embedding} + \text{positional\_encoding} \\[6pt]
+\text{For } l &= 1 \text{ to } L: \\
+x'_l &= x_{l-1} + \text{Attention}_l(x_{l-1}) \\
+x_l &= x'_l + \text{MLP}_l(x'_l) \\[6pt]
+\text{output} &= \text{LayerNorm}(x_L) \\
+\text{logits} &= x_L\, W_\text{unembed}
+\end{aligned}
+$$
 
 Expanding:
 
-```
-x_L = x_0 + sum_{l=1}^{L} [Attention_l(...) + MLP_l(...)]
-```
+$$
+x_L = x_0 + \sum_{l=1}^{L} \left[\text{Attention}_l(\ldots) + \text{MLP}_l(\ldots)\right]
+$$
 
 Each term in the sum is a "contribution" from that layer. We can measure the magnitude and direction of each contribution to understand what the layer is doing.
 
@@ -1428,18 +1445,18 @@ Parameters      110M/340M       117M-175B       220M-11B
 
 **How it works:**
 
-1. Split the image into non-overlapping patches of size P x P (e.g., 16 x 16)
-2. Flatten each patch: a P x P x C patch becomes a vector of dimension P^2 * C
-3. Linearly project each flattened patch to d_model dimensions (the "patch embedding")
+1. Split the image into non-overlapping patches of size $P \times P$ (e.g., $16 \times 16$)
+2. Flatten each patch: a $P \times P \times C$ patch becomes a vector of dimension $P^2 \cdot C$
+3. Linearly project each flattened patch to $d_\text{model}$ dimensions (the "patch embedding")
 4. Prepend a learnable [CLS] token
 5. Add learnable position embeddings
 6. Feed through a standard Transformer encoder
 7. Use the [CLS] token output for classification
 
-For a 224 x 224 image with 16 x 16 patches:
-- Number of patches: (224/16) x (224/16) = 14 x 14 = 196
-- Sequence length: 196 + 1 (CLS) = 197
-- Each patch: 16 * 16 * 3 = 768 dimensions -> project to d_model
+For a $224 \times 224$ image with $16 \times 16$ patches:
+- Number of patches: $(224/16) \times (224/16) = 14 \times 14 = 196$
+- Sequence length: $196 + 1$ (CLS) $= 197$
+- Each patch: $16 \times 16 \times 3 = 768$ dimensions -> project to $d_\text{model}$
 
 **Why ViTs need more data than CNNs:**
 
@@ -1544,7 +1561,7 @@ DeiT adds a distillation token alongside the CLS token. The CLS token is trained
 ### 12.3 Swin Transformer
 
 Key innovations:
-- **Windowed attention**: compute self-attention within local windows (e.g., 7x7 patches), reducing complexity from O(n^2) to O(n * w^2) where w is window size
+- **Windowed attention**: compute self-attention within local windows (e.g., $7 \times 7$ patches), reducing complexity from $O(n^2)$ to $O(n \cdot w^2)$ where $w$ is window size
 - **Shifted windows**: in alternating layers, shift window boundaries by half the window size to allow cross-window information flow
 - **Hierarchical structure**: progressively merge patches (like pooling), producing multi-scale feature maps for detection and segmentation
 
@@ -1560,7 +1577,7 @@ Key innovations:
 
 ### 13.1 Flash Attention
 
-**The Problem**: standard attention materializes the full N x N attention matrix. For N = 8192 (a moderate sequence length), this matrix has 67 million entries per head. Reading and writing this matrix from GPU HBM (high bandwidth memory) is the bottleneck — not the arithmetic.
+**The Problem**: standard attention materializes the full $N \times N$ attention matrix. For $N = 8192$ (a moderate sequence length), this matrix has 67 million entries per head. Reading and writing this matrix from GPU HBM (high bandwidth memory) is the bottleneck — not the arithmetic.
 
 **The Solution**: Flash Attention (Dao et al., 2022) tiles the computation into blocks that fit in SRAM (fast on-chip memory, ~20 MB on A100 vs 40-80 GB HBM). It never materializes the full attention matrix. Instead:
 
@@ -1571,23 +1588,21 @@ Key innovations:
 
 **The Online Softmax Trick**: normally, softmax requires two passes — one to compute the max (for numerical stability), one to compute the exponentials and normalize. The online version maintains a running max and running sum, updating them as new blocks arrive. This allows computing exact softmax in a single streaming pass.
 
-**Results**: 2-4x wall-clock speedup, O(N) memory instead of O(N^2). This is NOT an approximation — it computes exact attention.
+**Results**: 2-4x wall-clock speedup, $O(N)$ memory instead of $O(N^2)$. This is NOT an approximation — it computes exact attention.
 
 ### 13.2 KV-Cache
 
-**The Problem**: during autoregressive generation, at step t, the model computes attention over all t tokens. Without caching, we recompute K and V projections for all previous tokens at every step. Total work: O(n^2 * d) for generating n tokens.
+**The Problem**: during autoregressive generation, at step $t$, the model computes attention over all $t$ tokens. Without caching, we recompute K and V projections for all previous tokens at every step. Total work: $O(n^2 \cdot d)$ for generating $n$ tokens.
 
-**The Solution**: cache the K and V tensors for all previous tokens. At step t, only compute K_t and V_t for the new token, then concatenate with the cached values. The attention computation is then Q_t (1 x d_k) against all cached keys (t x d_k), producing attention weights (1 x t) and output (1 x d_v). Total work: O(n * d) over all steps.
+**The Solution**: cache the K and V tensors for all previous tokens. At step $t$, only compute $K_t$ and $V_t$ for the new token, then concatenate with the cached values. The attention computation is then $Q_t$ ($1 \times d_k$) against all cached keys ($t \times d_k$), producing attention weights ($1 \times t$) and output ($1 \times d_v$). Total work: $O(n \cdot d)$ over all steps.
 
-**Memory cost**: for each layer, store K and V tensors of shape (seq_len, d_k). For a model with L layers and h heads:
+**Memory cost**: for each layer, store K and V tensors of shape (seq_len, $d_k$). For a model with $L$ layers and $h$ heads:
 
-```
-KV-cache memory = 2 * L * h * seq_len * d_k * bytes_per_param
+$$
+\text{KV-cache memory} = 2 \cdot L \cdot h \cdot \text{seq\_len} \cdot d_k \cdot \text{bytes\_per\_param}
+$$
 
-Example (LLaMA 70B): 2 * 80 * 64 * 4096 * 128 * 2 bytes (fp16)
-                    = 2 * 80 * 64 * 4096 * 128 * 2
-                    = ~10.7 GB for a single sequence of 4096 tokens
-```
+Example (LLaMA 70B): $2 \times 80 \times 64 \times 4096 \times 128 \times 2$ bytes (fp16) $\approx 10.7$ GB for a single sequence of 4096 tokens.
 
 This is why GQA (reducing the number of KV heads) is so important for inference.
 
@@ -1598,26 +1613,26 @@ Covered in Section 4, but here are the key advantages for modern LLMs:
 1. **No additional parameters**: positions are encoded through rotation, not learned embeddings
 2. **Relative position**: the attention score between positions m and n depends only on m-n
 3. **Decay with distance**: attention between distant tokens is naturally attenuated
-4. **Length extrapolation**: better generalization to longer sequences than learned embeddings (though not perfect — techniques like NTK-aware scaling further improve this)
+4. **Length extrapolation**: better generalization to longer sequences than learned embeddings (though not perfect -- techniques like NTK-aware scaling further improve this)
 
 ### 13.4 Grouped Query Attention (GQA)
 
 **Multi-Head Attention (MHA)**: each head has its own Q, K, V projections
-- H query heads, H key heads, H value heads
-- KV-cache size proportional to H
+- $H$ query heads, $H$ key heads, $H$ value heads
+- KV-cache size proportional to $H$
 
 **Multi-Query Attention (MQA)**: all heads share a single K, V projection
-- H query heads, 1 key head, 1 value head
-- KV-cache reduced by factor H
+- $H$ query heads, 1 key head, 1 value head
+- KV-cache reduced by factor $H$
 - May reduce quality
 
 **Grouped Query Attention (GQA)**: middle ground
-- H query heads, G key-value heads (G < H, G > 1)
-- Groups of H/G query heads share one KV head
-- KV-cache reduced by factor H/G
+- $H$ query heads, $G$ key-value heads ($G < H$, $G > 1$)
+- Groups of $H/G$ query heads share one KV head
+- KV-cache reduced by factor $H/G$
 - Quality very close to MHA
 
-Example (LLaMA 2 70B): H=64 query heads, G=8 KV heads. KV-cache is 8x smaller than MHA.
+Example (LLaMA 2 70B): $H=64$ query heads, $G=8$ KV heads. KV-cache is 8x smaller than MHA.
 
 ```python
 class GroupedQueryAttention(nn.Module):
@@ -1665,21 +1680,21 @@ class GroupedQueryAttention(nn.Module):
 
 **The Math**:
 
-```
-Router(x) = softmax(x @ W_gate)         # (seq_len, num_experts)
-top_k_indices = TopK(Router(x), k)      # select top-k experts per token
-output = sum_i [gate_i * Expert_i(x)]   # weighted sum of selected expert outputs
-```
+$$
+\begin{aligned}
+\text{Router}(x) &= \text{softmax}(x\, W_\text{gate}) \\
+\text{top-}k &= \text{TopK}(\text{Router}(x),\, k) \\
+\text{output} &= \sum_i g_i \cdot \text{Expert}_i(x)
+\end{aligned}
+$$
 
 **Load balancing**: a naive router might always select the same experts, leaving others unused. An auxiliary loss encourages uniform expert utilization:
 
-```
-L_balance = alpha * num_experts * sum_i (f_i * P_i)
+$$
+\mathcal{L}_\text{balance} = \alpha \cdot N_\text{experts} \cdot \sum_i f_i \cdot P_i
+$$
 
-where:
-  f_i = fraction of tokens routed to expert i
-  P_i = average router probability for expert i
-```
+where $f_i$ = fraction of tokens routed to expert $i$ and $P_i$ = average router probability for expert $i$.
 
 **Key models using MoE**: Switch Transformer (top-1 routing, 1.6T params), Mixtral 8x7B (8 experts, top-2, 47B total params but ~13B active), GShard.
 
@@ -1795,11 +1810,13 @@ How does model performance improve as we increase model size, dataset size, and 
 
 Test loss follows power laws with respect to:
 
-```
-L(N) ~ N^(-0.076)   # model parameters (N), for fixed data and compute
-L(D) ~ D^(-0.095)   # dataset size (D), for fixed model and compute
-L(C) ~ C^(-0.050)   # compute budget (C), for optimal N and D
-```
+$$
+\begin{aligned}
+L(N) &\sim N^{-0.076} & \text{(model parameters, fixed data and compute)} \\
+L(D) &\sim D^{-0.095} & \text{(dataset size, fixed model and compute)} \\
+L(C) &\sim C^{-0.050} & \text{(compute budget, optimal } N \text{ and } D\text{)}
+\end{aligned}
+$$
 
 Key findings:
 - Larger models are more sample-efficient (need less data per parameter)
@@ -1810,12 +1827,11 @@ Key findings:
 
 Hoffman et al. found that Kaplan's recommendations led to undertrained models. The compute-optimal ratio:
 
-```
-Optimal tokens ~ 20 * N
+$$
+\text{Optimal tokens} \approx 20 \cdot N
+$$
 
-For a 70B parameter model: train on ~1.4 trillion tokens
-For a 7B parameter model: train on ~140 billion tokens
-```
+For a 70B parameter model: train on ~1.4 trillion tokens. For a 7B parameter model: train on ~140 billion tokens.
 
 Chinchilla (70B params, 1.4T tokens) outperformed Gopher (280B params, 300B tokens) despite being 4x smaller, because Gopher was severely undertrained.
 
@@ -1841,36 +1857,43 @@ This suggests the optimal ratio depends on the goal: if you want the best model 
 
 For quick reference, the core equations of the Transformer:
 
-```
-1. Scaled Dot-Product Attention:
-   Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) V
+**1. Scaled Dot-Product Attention:**
 
-2. Multi-Head Attention:
-   MultiHead(Q, K, V) = Concat(head_1, ..., head_h) W_O
-   where head_i = Attention(QW_Q^i, KW_K^i, VW_V^i)
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V$$
 
-3. Feed-Forward Network:
-   FFN(x) = max(0, xW_1 + b_1)W_2 + b_2
+**2. Multi-Head Attention:**
 
-4. Encoder Block (Post-Norm):
-   x = LayerNorm(x + MultiHead(x, x, x))
-   x = LayerNorm(x + FFN(x))
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)\, W_O$$
 
-5. Decoder Block (Post-Norm):
-   x = LayerNorm(x + MaskedMultiHead(x, x, x))
-   x = LayerNorm(x + MultiHead(x, enc_out, enc_out))
-   x = LayerNorm(x + FFN(x))
+where $\text{head}_i = \text{Attention}(Q W_Q^i,\, K W_K^i,\, V W_V^i)$
 
-6. Sinusoidal Positional Encoding:
-   PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))
-   PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
+**3. Feed-Forward Network:**
 
-7. Noam Learning Rate Schedule:
-   lr = d_model^(-0.5) * min(step^(-0.5), step * warmup_steps^(-1.5))
+$$\text{FFN}(x) = \max(0,\, x W_1 + b_1)\, W_2 + b_2$$
 
-8. Label Smoothing:
-   y_smooth = (1 - eps) * y_onehot + eps / V
-```
+**4. Encoder Block (Post-Norm):**
+
+$$x = \text{LayerNorm}(x + \text{MultiHead}(x, x, x))$$
+$$x = \text{LayerNorm}(x + \text{FFN}(x))$$
+
+**5. Decoder Block (Post-Norm):**
+
+$$x = \text{LayerNorm}(x + \text{MaskedMultiHead}(x, x, x))$$
+$$x = \text{LayerNorm}(x + \text{MultiHead}(x, \text{enc\_out}, \text{enc\_out}))$$
+$$x = \text{LayerNorm}(x + \text{FFN}(x))$$
+
+**6. Sinusoidal Positional Encoding:**
+
+$$PE(\text{pos},\, 2i) = \sin\!\left(\text{pos}\, / \, 10000^{2i/d_\text{model}}\right)$$
+$$PE(\text{pos},\, 2i+1) = \cos\!\left(\text{pos}\, / \, 10000^{2i/d_\text{model}}\right)$$
+
+**7. Noam Learning Rate Schedule:**
+
+$$\text{lr} = d_\text{model}^{-0.5} \cdot \min\!\left(\text{step}^{-0.5},\; \text{step} \cdot \text{warmup\_steps}^{-1.5}\right)$$
+
+**8. Label Smoothing:**
+
+$$y_\text{smooth} = (1 - \epsilon) \cdot y_\text{onehot} + \frac{\epsilon}{V}$$
 
 ---
 

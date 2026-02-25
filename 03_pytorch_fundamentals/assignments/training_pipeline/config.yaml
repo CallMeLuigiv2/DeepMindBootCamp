@@ -1,0 +1,42 @@
+# Training Pipeline -- Default Hyperparameters
+
+model:
+  type: "cifar10net"
+  num_classes: 10
+
+training:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.01
+  weight_decay: 0.0001
+  optimizer: "adamw"        # sgd, adam, adamw
+  scheduler: "cosine"       # cosine, step, onecycle, plateau
+  grad_clip: 1.0            # Max gradient norm (0 to disable)
+  patience: 15              # Early stopping patience
+
+scheduler_config:
+  step:
+    step_size: 30
+    gamma: 0.1
+  cosine:
+    T_max: 100              # Should match epochs
+    eta_min: 0.0001
+  plateau:
+    factor: 0.5
+    patience: 5
+    min_lr: 0.00001
+  onecycle:
+    max_lr: 0.01
+    pct_start: 0.3
+
+data:
+  dataset: "cifar10"
+  val_split: 0.1
+  num_workers: 2
+  pin_memory: true
+  augment: true
+
+output:
+  save_dir: "checkpoints"
+  log_dir: "runs"
+  seed: 42

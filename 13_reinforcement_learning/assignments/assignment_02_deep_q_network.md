@@ -133,7 +133,7 @@ class DQNWithReplay:
 
 **What replay fixes:** it breaks temporal correlation by sampling non-consecutive transitions. Each mini-batch is a diverse, decorrelated sample.
 
-**What replay does NOT fix:** the target still uses the same network (theta). It is still a moving target.
+**What replay does NOT fix:** the target still uses the same network ($\theta$). It is still a moving target.
 
 ---
 
@@ -318,7 +318,7 @@ This table should make clear the contribution of each component.
 
 1. **Dueling DQN**: implement the dueling architecture (separate value and advantage streams). Compare to standard DQN on LunarLander.
 
-2. **Prioritized Experience Replay**: implement proportional prioritization. Sample transitions with probability proportional to |TD error|^alpha. Add importance sampling weights. Compare replay buffer utilization and learning speed.
+2. **Prioritized Experience Replay**: implement proportional prioritization. Sample transitions with probability proportional to $|\text{TD error}|^\alpha$. Add importance sampling weights. Compare replay buffer utilization and learning speed.
 
 3. **Rainbow**: combine Double DQN, Dueling DQN, and Prioritized Experience Replay into a single agent. This is a subset of the full Rainbow paper (Hessel et al., 2018), which combines six DQN improvements.
 

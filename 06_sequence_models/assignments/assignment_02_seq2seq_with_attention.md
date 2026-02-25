@@ -272,10 +272,9 @@ Implement beam search and compare its output quality to greedy decoding.
    - Explain why: what locally optimal choice did greedy decoding make that led it astray?
 
 4. **Length normalization.** Raw beam search favors shorter sequences (shorter sequences accumulate less negative log-probability). Implement length normalization:
-   ```
-   score = log_probability / (length ^ alpha)
-   ```
-   where alpha is typically 0.6-0.7. Compare results with and without length normalization.
+   $$\text{score} = \frac{\log p}{\text{length}^\alpha}$$
+
+   where $\alpha$ is typically 0.6-0.7. Compare results with and without length normalization.
 
 ### Expected Results
 

@@ -31,11 +31,11 @@ def sigmoid(z):
 ```
 
 **Requirements:**
-- Must be numerically stable. Test with z = -1000 and z = 1000. Neither should produce NaN or Inf.
-- Plot the sigmoid function for z in [-10, 10].
-- Verify numerically that the derivative of sigmoid is sigmoid(z) * (1 - sigmoid(z)) by comparing your analytical derivative to a numerical approximation (finite differences).
+- Must be numerically stable. Test with $z = -1000$ and $z = 1000$. Neither should produce NaN or Inf.
+- Plot the sigmoid function for $z \in [-10, 10]$.
+- Verify numerically that the derivative of sigmoid is $\sigma(z) \cdot (1 - \sigma(z))$ by comparing your analytical derivative to a numerical approximation (finite differences).
 
-**Hint for numerical stability:** When z is very negative, exp(-z) is huge and overflows. Rewrite: for z >= 0 use 1/(1+exp(-z)), for z < 0 use exp(z)/(1+exp(z)).
+**Hint for numerical stability:** When $z$ is very negative, $e^{-z}$ is huge and overflows. Rewrite: for $z \geq 0$ use $\frac{1}{1+e^{-z}}$, for $z < 0$ use $\frac{e^z}{1+e^z}$.
 
 ### 1B: Cross-Entropy Loss (10 points)
 
@@ -54,7 +54,7 @@ def binary_cross_entropy(y_true, y_pred):
 ```
 
 **Requirements:**
-- Clip predictions to [epsilon, 1-epsilon] where epsilon = 1e-15.
+- Clip predictions to $[\epsilon, 1-\epsilon]$ where $\epsilon = 10^{-15}$.
 - In your notebook, include a written derivation of binary cross-entropy from maximum likelihood estimation. Show each step:
   1. Write the likelihood of a single Bernoulli sample.
   2. Write the likelihood of n independent samples.
@@ -106,8 +106,8 @@ class LogisticRegression:
 
 Using the 2D synthetic dataset from Part 1:
 - Plot the data points (colored by class).
-- Overlay the decision boundary (the line where sigmoid(Xw + b) = 0.5, which is where Xw + b = 0).
-- Derive and explain the decision boundary equation: x2 = -(w1*x1 + b) / w2.
+- Overlay the decision boundary (the line where $\sigma(X\mathbf{w} + b) = 0.5$, which is where $X\mathbf{w} + b = 0$).
+- Derive and explain the decision boundary equation: $x_2 = -(w_1 x_1 + b) / w_2$.
 
 ### 2B: Nonlinear Decision Boundaries (10 points)
 
@@ -196,7 +196,7 @@ def auc(fpr, tpr):
 
 **Requirements:**
 - Sort by threshold (descending).
-- At each threshold, compute FPR = FP/(FP+TN) and TPR = TP/(TP+FN).
+- At each threshold, compute $\text{FPR} = \frac{FP}{FP+TN}$ and $\text{TPR} = \frac{TP}{TP+FN}$.
 - Plot the ROC curve. Include the diagonal (random classifier baseline).
 - Compute and display the AUC value.
 - Compare your ROC curve and AUC to sklearn's `roc_curve` and `roc_auc_score`. They should match.
@@ -227,7 +227,7 @@ def softmax(z):
 **Requirements:**
 - Numerically stable (subtract the max per row before exponentiating).
 - Verify that each row sums to 1.
-- Show that for 2 classes, softmax is equivalent to sigmoid.
+- Show that for 2 classes, softmax is equivalent to the sigmoid function.
 
 ### 4B: Multi-Class Logistic Regression (5 points)
 

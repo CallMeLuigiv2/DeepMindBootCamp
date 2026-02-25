@@ -110,7 +110,7 @@ def outer_product(a, b):
 ```
 
 **Why this matters:** The gradient of a linear layer's weight matrix is an outer product:
-dL/dW = (dL/dz) outer (input). This is how weight gradients are computed in backprop.
+$\frac{\partial \mathcal{L}}{\partial W} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}} \otimes \mathbf{input}$. This is how weight gradients are computed in backprop.
 
 #### 1e. Transpose
 
@@ -240,8 +240,8 @@ result is different (matrix multiplication is not commutative).
 
 ### Written Question
 
-In a neural network, the weight matrix W of a linear layer performs a transformation.
-The bias vector b performs a translation. Together, y = Wx + b is an **affine**
+In a neural network, the weight matrix $W$ of a linear layer performs a transformation.
+The bias vector $\mathbf{b}$ performs a translation. Together, $\mathbf{y} = W\mathbf{x} + \mathbf{b}$ is an **affine**
 transformation, not a linear one (because of the bias). Why is the bias necessary?
 What can affine transformations do that pure linear transformations cannot? (Hint: think
 about what happens at the origin.)

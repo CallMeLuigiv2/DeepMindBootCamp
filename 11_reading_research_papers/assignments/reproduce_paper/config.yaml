@@ -1,0 +1,41 @@
+# Reproduce Paper - Configuration
+# Modify this config based on the paper you choose to reproduce.
+
+# Paper selection
+paper: resnet  # resnet, batchnorm, ddpm, lora, vit
+
+# Data
+data:
+  dataset: cifar10
+  batch_size: 128
+  val_split: 0.1
+  num_workers: 4
+  augment: true
+
+# Model (ResNet example - modify for your chosen paper)
+model:
+  architecture: resnet18
+  num_classes: 10
+
+# Training (match paper's training methodology)
+training:
+  num_epochs: 200
+  learning_rate: 0.1
+  optimizer: sgd
+  momentum: 0.9
+  weight_decay: 0.0001
+  lr_scheduler: multistep
+  lr_milestones: [100, 150]
+  lr_gamma: 0.1
+
+# Experiment
+experiment:
+  seeds: [42, 1, 2]
+  num_runs: 3
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs
+  decision_log: decision_log.md

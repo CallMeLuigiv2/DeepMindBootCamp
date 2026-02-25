@@ -1,0 +1,52 @@
+# Distributed Training - Configuration
+
+# Data
+data:
+  dataset: cifar10
+  batch_size: 32        # micro-batch size per GPU
+  val_split: 0.1
+  num_workers: 4
+  augment: true
+
+# Model
+model:
+  architecture: resnet18
+  num_classes: 10
+
+# Distributed
+distributed:
+  backend: nccl          # nccl for GPU, gloo for CPU
+  num_gpus: 2
+
+# Gradient Accumulation
+accumulation:
+  steps: 8              # effective batch_size = batch_size * steps * num_gpus
+  sync_every_n_steps: 8  # only sync gradients at accumulation boundary
+
+# Mixed Precision
+mixed_precision:
+  enabled: true
+  dtype: float16         # float16 or bfloat16
+
+# Gradient Checkpointing
+checkpointing:
+  enabled: true
+
+# torch.compile
+compile:
+  enabled: true
+  mode: default          # default, reduce-overhead, max-autotune
+
+# Training
+training:
+  num_epochs: 20
+  learning_rate: 0.001
+  optimizer: adamw
+  weight_decay: 0.01
+  lr_scheduler: cosine
+
+# Logging
+logging:
+  log_interval: 50
+  save_dir: checkpoints
+  log_dir: logs

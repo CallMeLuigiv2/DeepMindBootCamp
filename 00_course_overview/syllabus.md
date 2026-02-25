@@ -138,7 +138,7 @@ If you find yourself unable to meet the mastery criteria for a module, that is v
 - Paper read: "Attention Is All You Need" (Vaswani et al., 2017)
 - Implement a Transformer from scratch in PyTorch
 
-*Learning objectives:* Implement multi-head attention from scratch. Explain why scaling by sqrt(d_k) is necessary. Build and train a Transformer for a sequence task.
+*Learning objectives:* Implement multi-head attention from scratch. Explain why scaling by $\sqrt{d_k}$ is necessary. Build and train a Transformer for a sequence task.
 
 **Week 9 — Natural Language Processing with Transformers**
 

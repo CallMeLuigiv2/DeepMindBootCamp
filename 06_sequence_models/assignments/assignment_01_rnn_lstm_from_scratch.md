@@ -18,9 +18,7 @@ You will then train your implementations on a character-level language model and
 
 Implement a class `ManualRNNCell` that computes:
 
-```
-h_t = tanh(W_xh @ x_t + W_hh @ h_{t-1} + b_h)
-```
+$$h_t = \tanh(W_{xh}\, x_t + W_{hh}\, h_{t-1} + b_h)$$
 
 ### Requirements
 
@@ -67,14 +65,14 @@ Write this verification as a test function.
 
 Implement a class `ManualLSTMCell` that computes all four gates:
 
-```
-f_t = sigmoid(W_f @ [h_{t-1}, x_t] + b_f)     # Forget gate
-i_t = sigmoid(W_i @ [h_{t-1}, x_t] + b_i)     # Input gate
-g_t = tanh(W_g @ [h_{t-1}, x_t] + b_g)        # Candidate
-C_t = f_t * C_{t-1} + i_t * g_t                # Cell state update
-o_t = sigmoid(W_o @ [h_{t-1}, x_t] + b_o)     # Output gate
-h_t = o_t * tanh(C_t)                          # Hidden state
-```
+$$\begin{aligned}
+f_t &= \sigma(W_f [h_{t-1},\, x_t] + b_f) & \text{(forget gate)} \\
+i_t &= \sigma(W_i [h_{t-1},\, x_t] + b_i) & \text{(input gate)} \\
+\tilde{C}_t &= \tanh(W_g [h_{t-1},\, x_t] + b_g) & \text{(candidate)} \\
+C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t & \text{(cell state update)} \\
+o_t &= \sigma(W_o [h_{t-1},\, x_t] + b_o) & \text{(output gate)} \\
+h_t &= o_t \odot \tanh(C_t) & \text{(hidden state)}
+\end{aligned}$$
 
 ### Requirements
 
@@ -218,9 +216,9 @@ If you finish early and want to go deeper:
 
 1. **Implement a GRU cell from scratch.** Add it to the comparison experiments. Does it match LSTM performance? Is it faster to train?
 
-2. **Experiment with sequence length.** Find the approximate sequence length at which the vanilla RNN completely fails to learn long-range dependencies. Can you relate this to the eigenvalues of your W_hh matrix?
+2. **Experiment with sequence length.** Find the approximate sequence length at which the vanilla RNN completely fails to learn long-range dependencies. Can you relate this to the eigenvalues of your $W_{hh}$ matrix?
 
-3. **Implement orthogonal initialization** for W_hh and compare training dynamics to Xavier initialization. Does orthogonal initialization help the vanilla RNN with longer sequences?
+3. **Implement orthogonal initialization** for $W_{hh}$ and compare training dynamics to Xavier initialization. Does orthogonal initialization help the vanilla RNN with longer sequences?
 
 4. **Temperature sampling.** Implement temperature-controlled sampling for text generation. Show how temperature affects the diversity vs. coherence trade-off.
 

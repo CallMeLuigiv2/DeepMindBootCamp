@@ -90,11 +90,10 @@ class TransformerEncoderBlock(nn.Module):
 You MUST use the `MultiHeadAttention` class you built in Assignment 1. If you need to modify it (e.g., to support masking), do so.
 
 The feed-forward network must be:
-```
-FFN(x) = Linear_2(Dropout(ReLU(Linear_1(x))))
-# Linear_1: d_model -> d_ff
-# Linear_2: d_ff -> d_model
-```
+
+$$\text{FFN}(x) = \text{Linear}_2(\text{Dropout}(\text{ReLU}(\text{Linear}_1(x))))$$
+
+where $\text{Linear}_1: d_\text{model} \to d_{ff}$ and $\text{Linear}_2: d_{ff} \to d_\text{model}$.
 
 ### Verification
 
@@ -108,11 +107,11 @@ FFN(x) = Linear_2(Dropout(ReLU(Linear_1(x))))
 
 3. **Gradient flow test**: compute a scalar loss from the output, call `.backward()`, and verify that gradients are non-zero for all parameters.
 
-4. **Parameter count**: for d_model=512, d_ff=2048, num_heads=8, verify the total parameter count matches the theoretical value:
-   - Multi-head attention: 4 * 512^2 = 1,048,576
-   - FFN: 512*2048 + 2048 + 2048*512 + 512 = 2,099,712
-   - LayerNorm (x2): 2 * (512 + 512) = 2,048
-   - Total per block: ~3,150,336
+4. **Parameter count**: for $d_\text{model}=512$, $d_{ff}=2048$, num_heads=8, verify the total parameter count matches the theoretical value:
+   - Multi-head attention: $4 \times 512^2 = 1{,}048{,}576$
+   - FFN: $512 \times 2048 + 2048 + 2048 \times 512 + 512 = 2{,}099{,}712$
+   - LayerNorm (x2): $2 \times (512 + 512) = 2{,}048$
+   - Total per block: $\approx 3{,}150{,}336$
 
 ### Deliverable
 
@@ -401,7 +400,7 @@ Submit as a Jupyter notebook (or multiple notebooks) with clear sections, inline
 
 2. **Different positional encodings**: implement learned positional embeddings alongside sinusoidal. Train both on the sorting task. Is there a difference? Now implement RoPE and compare all three.
 
-3. **Pre-Norm vs Post-Norm**: the original Transformer uses Post-Norm (`LayerNorm(x + SubLayer(x))`). Implement Pre-Norm (`x + SubLayer(LayerNorm(x))`). Train both on the sorting task. Compare training stability (can you train without warmup using Pre-Norm?).
+3. **Pre-Norm vs Post-Norm**: the original Transformer uses Post-Norm ($\text{LayerNorm}(x + \text{SubLayer}(x))$). Implement Pre-Norm ($x + \text{SubLayer}(\text{LayerNorm}(x))$). Train both on the sorting task. Compare training stability (can you train without warmup using Pre-Norm?).
 
 4. **Weight tying**: in the original Transformer paper, the source embedding, target embedding, and output projection share weights. Implement weight tying and compare parameter count and performance.
 
@@ -413,7 +412,7 @@ Submit as a Jupyter notebook (or multiple notebooks) with clear sections, inline
 
 ## Common Pitfalls
 
-1. **Embedding scaling**: the original Transformer multiplies embeddings by sqrt(d_model). This is easily forgotten and affects training stability.
+1. **Embedding scaling**: the original Transformer multiplies embeddings by $\sqrt{d_\text{model}}$. This is easily forgotten and affects training stability.
 
 2. **Teacher forcing vs autoregressive**: during training, the decoder receives the ground-truth target sequence (shifted right). During inference, it receives its own previous predictions. Make sure your training loop uses teacher forcing correctly.
 

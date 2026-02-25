@@ -1,0 +1,46 @@
+# Profiling and Bottleneck Analysis - Configuration
+
+# Baseline (deliberately slow)
+baseline:
+  batch_size: 8
+  num_workers: 0
+  pin_memory: false
+  heavy_augmentation: true
+  sync_every_step: true
+  clone_inputs: true
+  log_tensors: true
+
+# Optimized
+optimized:
+  batch_size: 128
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  non_blocking: true
+  heavy_augmentation: false
+  sync_every_step: false
+  mixed_precision: true
+  compile: true
+
+# Profiling
+profiling:
+  num_steps: 50
+  warmup_steps: 10
+  profile_steps: 10
+  trace_dir: traces
+
+# Model
+model:
+  architecture: resnet18
+  num_classes: 10
+
+# Training
+training:
+  learning_rate: 0.001
+  optimizer: adam
+  weight_decay: 0.0
+
+# Logging
+logging:
+  save_dir: checkpoints
+  log_dir: logs

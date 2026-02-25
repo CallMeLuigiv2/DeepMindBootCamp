@@ -34,7 +34,7 @@ def linear_noise_schedule(T, beta_start=1e-4, beta_end=0.02):
 
 Use T = 1000 as the default number of timesteps.
 
-**Verification:** Plot alpha_bar_t vs. t. It should start near 1 (signal preserved) and decrease to near 0 (signal destroyed). For the linear schedule with the default parameters, alpha_bar_{1000} should be close to 0.
+**Verification:** Plot $\bar{\alpha}_t$ vs. $t$. It should start near 1 (signal preserved) and decrease to near 0 (signal destroyed). For the linear schedule with the default parameters, $\bar{\alpha}_{1000}$ should be close to 0.
 
 ### 1.2 Implement the Forward Process
 
@@ -69,7 +69,7 @@ def forward_diffusion(x_0, t, alpha_bars):
 
 Take a single MNIST digit and show its progressive destruction:
 
-1. Compute x_t for t = 0, 50, 100, 200, 400, 600, 800, 999.
+1. Compute $x_t$ for $t = 0, 50, 100, 200, 400, 600, 800, 999$.
 2. Display all 8 images in a row.
 3. Label each with its timestep.
 
@@ -305,7 +305,7 @@ After training, generate a grid of 64 samples. Display them. Do they look like M
 
 ### 4.3 Collect the Denoising Trajectory
 
-Modify the sampling loop to save intermediate states. Store x_t at timesteps t = T, T*3/4, T/2, T/4, T/8, T/16, and 0 (or a similar geometric progression).
+Modify the sampling loop to save intermediate states. Store $x_t$ at timesteps $t = T, 3T/4, T/2, T/4, T/8, T/16$, and $0$ (or a similar geometric progression).
 
 For a single generated image, display this trajectory as a row of images:
 - Far left: pure noise (t = T)
@@ -357,7 +357,7 @@ def cosine_noise_schedule(T, s=0.008):
 ```
 
 Train with both the linear and cosine schedules (same T, same architecture, same number of epochs). Compare:
-1. Plot alpha_bar_t vs. t for both schedules. The cosine schedule should be more gradual.
+1. Plot $\bar{\alpha}_t$ vs. $t$ for both schedules. The cosine schedule should be more gradual.
 2. Compare sample quality. The cosine schedule often performs better because it avoids destroying too much information in the final steps.
 
 ### 5.3 Qualitative Analysis
@@ -375,24 +375,24 @@ Compare your diffusion model samples with the VAE samples from Assignment 1 and 
 
 ### 6.1 What Does the Network Actually Predict?
 
-Take a training image x_0. Add noise at various timesteps to get x_t. Run the trained model to get epsilon_pred. Compare:
-- The actual noise epsilon (what was added)
-- The predicted noise epsilon_pred (what the model thinks was added)
-- The residual: epsilon - epsilon_pred (prediction error)
+Take a training image $x_0$. Add noise at various timesteps to get $x_t$. Run the trained model to get $\epsilon_{\text{pred}}$. Compare:
+- The actual noise $\epsilon$ (what was added)
+- The predicted noise $\epsilon_{\text{pred}}$ (what the model thinks was added)
+- The residual: $\epsilon - \epsilon_{\text{pred}}$ (prediction error)
 
-Display all three for t = 10, 100, 500, 900. At which timesteps is the prediction most accurate? At which is it hardest?
+Display all three for $t = 10, 100, 500, 900$. At which timesteps is the prediction most accurate? At which is it hardest?
 
 **Expected insight:** The model is most accurate at intermediate timesteps. At very small t, the noise is tiny and hard to detect. At very large t, the signal is almost completely destroyed and there is little information to work with.
 
 ### 6.2 Predicted x_0
 
-At any timestep, the model's noise prediction implies a prediction of x_0:
+At any timestep, the model's noise prediction implies a prediction of $x_0$:
 
 ```python
 x_0_pred = (x_t - sqrt(1 - alpha_bar_t) * epsilon_pred) / sqrt(alpha_bar_t)
 ```
 
-Visualize x_0_pred at different timesteps during sampling. Early in the reverse process (high t), x_0_pred will be rough and noisy. As t decreases, x_0_pred will sharpen. This shows how the model refines its "guess" of the final image over the course of sampling.
+Visualize $\hat{x}_0$ at different timesteps during sampling. Early in the reverse process (high $t$), $\hat{x}_0$ will be rough and noisy. As $t$ decreases, $\hat{x}_0$ will sharpen. This shows how the model refines its "guess" of the final image over the course of sampling.
 
 ---
 
@@ -480,6 +480,8 @@ def sample_ddim(model, shape, T, alpha_bars, device, num_steps=50):
 ```
 
 Compare DDIM sampling at 50, 20, and 10 steps with DDPM at 1000 steps:
+
+
 - How much faster is DDIM?
 - How does sample quality degrade as you reduce steps?
 - Is DDIM with 50 steps close in quality to DDPM with 1000 steps?
@@ -497,11 +499,11 @@ Implement classifier-free guidance for class-conditional generation on MNIST:
    - epsilon_cond = model(x_t, t, class_label)
    - epsilon_guided = epsilon_uncond + w * (epsilon_cond - epsilon_uncond)
 
-   Use w = 3.0 as a starting point.
+   Use $w = 3.0$ as a starting point.
 
 4. **Generate class-conditional samples** for each digit and compare with unconditional samples. The guided samples should be more clearly recognizable as the specified digit.
 
-5. **Vary the guidance scale w** from 1.0 to 10.0. Show how higher guidance produces samples that are more clearly the target class but less diverse.
+5. **Vary the guidance scale $w$** from 1.0 to 10.0. Show how higher guidance produces samples that are more clearly the target class but less diverse.
 
 ### S3: Train on Fashion-MNIST or CIFAR-10
 
@@ -524,7 +526,7 @@ Implement a parameterized noise schedule and experiment:
 - Try a sigmoid schedule: betas follow a sigmoid curve.
 - For each, plot alpha_bar_t and compare sample quality.
 
-The goal is to develop intuition for how the noise schedule affects generation. Does a schedule that preserves information longer (higher alpha_bar at intermediate t) produce better results?
+The goal is to develop intuition for how the noise schedule affects generation. Does a schedule that preserves information longer (higher $\bar{\alpha}$ at intermediate $t$) produce better results?
 
 ---
 

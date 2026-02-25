@@ -74,8 +74,8 @@ By the end of this session, the apprentice will:
 - **Compute-bound**: the GPU ALUs are the bottleneck. More FLOPs would make it slower. Example: large matrix multiplications.
 - **Memory-bound**: reading/writing data from GPU memory is the bottleneck. The ALUs are idle waiting for data. Example: element-wise operations, activations, normalization.
 - The **arithmetic intensity** of an operation: FLOPs per byte of memory accessed.
-  - Matrix multiply (m x k) @ (k x n): 2*m*k*n FLOPs, reads (m*k + k*n) * bytes_per_element, writes m*n * bytes_per_element.
-  - Element-wise ReLU on tensor of size N: N FLOPs (comparisons), reads N * bytes, writes N * bytes.
+  - Matrix multiply $(m \times k) \times (k \times n)$: $2mkn$ FLOPs, reads $(mk + kn) \times \text{bytes\_per\_element}$, writes $mn \times \text{bytes\_per\_element}$.
+  - Element-wise ReLU on tensor of size $N$: $N$ FLOPs (comparisons), reads $N \times \text{bytes}$, writes $N \times \text{bytes}$.
 - The roofline: plot throughput (FLOPS) vs arithmetic intensity (FLOP/byte).
   - Below the roofline = not hitting hardware limits, room for optimization.
   - On the memory-bound slope = need to reduce memory access.
@@ -125,7 +125,7 @@ By the end of this session, the apprentice will:
 2. Use `torch.cuda.memory_stats()` and `torch.cuda.memory_summary()` to diagnose memory usage.
 3. Implement gradient checkpointing and explain the compute-memory tradeoff.
 4. Apply gradient accumulation to simulate large batch sizes within memory constraints.
-5. Explain Flash Attention and why it reduces memory from O(n^2) to O(n).
+5. Explain Flash Attention and why it reduces memory from $O(n^2)$ to $O(n)$.
 6. Make informed decisions about when to use float16 vs bfloat16 for activations.
 
 ### Outline
@@ -183,7 +183,7 @@ By the end of this session, the apprentice will:
           # ... expensive computation ...
           return output
   ```
-- Memory savings: for a model with L layers, naive approach stores L activation tensors. With checkpointing every sqrt(L) layers, you store sqrt(L) tensors and recompute the rest. Memory goes from O(L) to O(sqrt(L)).
+- Memory savings: for a model with $L$ layers, naive approach stores $L$ activation tensors. With checkpointing every $\sqrt{L}$ layers, you store $\sqrt{L}$ tensors and recompute the rest. Memory goes from $O(L)$ to $O(\sqrt{L})$.
 - Compute cost: one extra forward pass through the checkpointed segments. Typically 20-30% slower but uses 50-70% less activation memory.
 - When to use it: when activations are the memory bottleneck and you want to increase batch size or model size.
 
@@ -206,7 +206,7 @@ By the end of this session, the apprentice will:
 #### Part 5: Advanced Memory Techniques (30 min)
 - **In-place operations**: operations like `relu_(x)` and `x.add_(y)` modify tensors in place, avoiding allocation. But be careful: in-place ops on tensors that require grad can cause errors. Use only where safe.
 - **Clearing cache**: `torch.cuda.empty_cache()` releases unused cached memory back to CUDA. Useful when switching between models or inference modes. Do not call it in the training loop -- it will slow things down.
-- **Flash Attention**: standard attention computes the full N x N attention matrix, requiring O(N^2) memory. Flash Attention tiles the computation and never materializes the full matrix. Memory drops to O(N). This is not an approximation -- it is exact attention, just computed more efficiently.
+- **Flash Attention**: standard attention computes the full $N \times N$ attention matrix, requiring $O(N^2)$ memory. Flash Attention tiles the computation and never materializes the full matrix. Memory drops to $O(N)$. This is not an approximation -- it is exact attention, just computed more efficiently.
   ```python
   # PyTorch >= 2.0 has built-in scaled_dot_product_attention with Flash Attention
   from torch.nn.functional import scaled_dot_product_attention
@@ -542,11 +542,11 @@ By the end of this session, the apprentice will:
 - You do not need to write CUDA kernels for most work. But understanding these concepts helps you reason about why certain operations are fast or slow.
 
 #### Part 6: Flash Attention -- A Case Study (25 min)
-- Standard attention: Q @ K^T produces an N x N matrix (for sequence length N). This matrix is stored in GPU memory, softmax is applied, then it is multiplied by V.
-  - Memory: O(N^2) for the attention matrix.
-  - For N=8192, that is 8192^2 * 2 bytes (FP16) = 128 MB per head per batch element.
-- Flash Attention (Dao et al., 2022): tiles the Q, K, V matrices into blocks that fit in SRAM (shared memory). Computes attention block by block, accumulating the softmax statistics online. Never materializes the full N x N matrix in GPU memory.
-  - Memory: O(N) -- only the output and the log-sum-exp statistics.
+- Standard attention: $Q K^T$ produces an $N \times N$ matrix (for sequence length $N$). This matrix is stored in GPU memory, softmax is applied, then it is multiplied by $V$.
+  - Memory: $O(N^2)$ for the attention matrix.
+  - For $N=8192$, that is $8192^2 \times 2$ bytes (FP16) = 128 MB per head per batch element.
+- Flash Attention (Dao et al., 2022): tiles the $Q$, $K$, $V$ matrices into blocks that fit in SRAM (shared memory). Computes attention block by block, accumulating the softmax statistics online. Never materializes the full $N \times N$ matrix in GPU memory.
+  - Memory: $O(N)$ -- only the output and the log-sum-exp statistics.
   - Speed: 2-4x faster than standard attention due to reduced memory traffic, despite doing some redundant computation.
 - Why this is the gold standard of kernel engineering:
   - It does not approximate anything. The output is identical.

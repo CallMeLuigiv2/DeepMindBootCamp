@@ -46,13 +46,11 @@ corners. The network LEARNS which patterns to look for — that is the power of 
 
 **2D convolution (single channel, single kernel):**
 
-Given input I of size H_in x W_in and kernel K of size K_h x K_w:
+Given input $I$ of size $H_{in} \times W_{in}$ and kernel $K$ of size $K_h \times K_w$:
 
-```
-Output(i, j) = sum_{m=0}^{K_h - 1} sum_{n=0}^{K_w - 1} I(i*s + m, j*s + n) * K(m, n) + b
-```
+$$\text{Output}(i, j) = \sum_{m=0}^{K_h - 1} \sum_{n=0}^{K_w - 1} I(i \cdot s + m,\; j \cdot s + n) \cdot K(m, n) + b$$
 
-where s is the stride and b is the bias term.
+where $s$ is the stride and $b$ is the bias term.
 
 **Technical note:** Deep learning "convolution" is actually cross-correlation. True
 mathematical convolution flips the kernel horizontally and vertically before applying it.
@@ -61,15 +59,12 @@ learn the flipped version.
 
 **Multi-channel convolution:**
 
-For input with C_in channels and C_out output channels:
+For input with $C_{in}$ channels and $C_{out}$ output channels:
 
-```
-Output(c_out, i, j) = sum_{c=0}^{C_in-1} sum_{m=0}^{K_h-1} sum_{n=0}^{K_w-1}
-                       I(c, i*s+m, j*s+n) * W(c_out, c, m, n) + b(c_out)
-```
+$$\text{Output}(c_{out}, i, j) = \sum_{c=0}^{C_{in}-1} \sum_{m=0}^{K_h-1} \sum_{n=0}^{K_w-1} I(c,\; i \cdot s+m,\; j \cdot s+n) \cdot W(c_{out}, c, m, n) + b(c_{out})$$
 
-The weight tensor W has shape (C_out, C_in, K_h, K_w).
-Each of the C_out filters is a 3D tensor of shape (C_in, K_h, K_w).
+The weight tensor $W$ has shape $(C_{out}, C_{in}, K_h, K_w)$.
+Each of the $C_{out}$ filters is a 3D tensor of shape $(C_{in}, K_h, K_w)$.
 
 ### Code
 
@@ -117,30 +112,22 @@ print(out.shape)  # torch.Size([1, 64, 32, 32])
 
 **MEMORIZE THIS. You will use it constantly.**
 
-```
-output_size = floor((input_size + 2 * padding - kernel_size) / stride) + 1
-```
+$$\text{output\_size} = \left\lfloor \frac{\text{input\_size} + 2 \times \text{padding} - \text{kernel\_size}}{\text{stride}} \right\rfloor + 1$$
 
 Equivalently, for those who prefer to think about it as: how many positions can the kernel
 fit?
 
-```
-output_size = floor((input_size + 2 * padding - kernel_size) / stride) + 1
-                     ^-- effective input size --^
-                     how much room for the kernel to slide, divided by step size, plus 1
-```
+$$\text{output\_size} = \left\lfloor \frac{\overbrace{\text{input\_size} + 2 \times \text{padding} - \text{kernel\_size}}^{\text{effective input size}}}{\underbrace{\text{stride}}_{\text{step size}}} \right\rfloor + 1$$
 
 ### Padding Types
 
 **Valid padding (padding=0):** No padding. Output shrinks.
-```
-out = floor((in - kernel) / stride) + 1
-```
+
+$$\text{out} = \left\lfloor \frac{\text{in} - \text{kernel}}{\text{stride}} \right\rfloor + 1$$
 
 **Same padding:** Output = Input (when stride=1).
-```
-padding = (kernel_size - 1) / 2    (requires odd kernel_size)
-```
+
+$$\text{padding} = \frac{\text{kernel\_size} - 1}{2} \quad \text{(requires odd kernel\_size)}$$
 
 **Full padding:** Padding = kernel_size - 1. Every possible overlap is computed. Output is
 larger than input.
@@ -227,9 +214,7 @@ Output: 32x32  (same padding with dilation)
 
 For upsampling (transposed convolution):
 
-```
-output_size = (input_size - 1) * stride - 2 * padding + kernel_size + output_padding
-```
+$$\text{output\_size} = (\text{input\_size} - 1) \times \text{stride} - 2 \times \text{padding} + \text{kernel\_size} + \text{output\_padding}$$
 
 **Example:** Upsample 2x:
 ```
@@ -244,12 +229,12 @@ Output: 32x32  (doubled)
 
 ### Intuition
 
-A single convolution filter is not a 2D matrix — it is a 3D tensor. If the input has C_in
-channels, the filter has shape (C_in, K_h, K_w). It processes ALL input channels
+A single convolution filter is not a 2D matrix — it is a 3D tensor. If the input has $C_{in}$
+channels, the filter has shape $(C_{in}, K_h, K_w)$. It processes ALL input channels
 simultaneously to produce a SINGLE output channel (one feature map).
 
-To get C_out output channels, we need C_out separate 3D filters. The full weight tensor has
-shape (C_out, C_in, K_h, K_w).
+To get $C_{out}$ output channels, we need $C_{out}$ separate 3D filters. The full weight tensor has
+shape $(C_{out}, C_{in}, K_h, K_w)$.
 
 ```
            +---------+
@@ -266,13 +251,9 @@ Input ---> | Filter 2 | --- (C_in, K_h, K_w) ---> 1 feature map    = C_out featu
 
 **THIS IS A DEEPMIND INTERVIEW QUESTION. Know it perfectly.**
 
-```
-Parameters = (K_h * K_w * C_in + 1) * C_out
-              ^--- per-filter ---^   ^bias^
-              weights per filter      one per filter
-```
+$$\text{Parameters} = \underbrace{(K_h \times K_w \times C_{in}}_{\text{weights per filter}} + \underbrace{1}_{\text{bias}}) \times C_{out}$$
 
-Without bias: `Parameters = K_h * K_w * C_in * C_out`
+Without bias: $\text{Parameters} = K_h \times K_w \times C_{in} \times C_{out}$
 
 ### Worked Examples: Parameter Counting
 
@@ -317,9 +298,7 @@ Linear(3072, 128):  (3072 + 1) * 128 = 393,344  (4x more than the entire CNN)
 
 For a conv layer, the number of multiply-accumulate operations:
 
-```
-FLOPs = K_h * K_w * C_in * C_out * H_out * W_out
-```
+$$\text{FLOPs} = K_h \times K_w \times C_{in} \times C_{out} \times H_{out} \times W_{out}$$
 
 This matters for understanding computational cost. Note that FLOPs depends on the spatial
 output size, while parameter count does not.
@@ -358,6 +337,8 @@ Input at position (i, j): a vector of length C_in
 Output at position (i, j): a vector of length C_out
 ```
 
+Formally: at each spatial position, the 1x1 conv computes $\mathbf{y} = W\mathbf{x} + \mathbf{b}$ where $W \in \mathbb{R}^{C_{out} \times C_{in}}$.
+
 **Why they are powerful:**
 1. **Dimensionality reduction:** Reduce channels before an expensive 3x3 conv (Inception
    bottleneck, ResNet bottleneck).
@@ -384,29 +365,24 @@ spatial patterns per channel, (2) learn cross-channel interactions.
 **Standard convolution:**
 ```
 Input (C_in, H, W) -> Kernel (C_out, C_in, K, K) -> Output (C_out, H', W')
-Parameters: K * K * C_in * C_out
 ```
+Parameters: $K^2 \cdot C_{in} \cdot C_{out}$
 
 **Depthwise separable convolution:**
 ```
 Step 1 — Depthwise: One K x K filter per input channel
   Input (C_in, H, W) -> Kernel (C_in, 1, K, K) -> Output (C_in, H', W')
-  Parameters: K * K * C_in
 
 Step 2 — Pointwise: 1x1 conv to mix channels
   Input (C_in, H', W') -> Kernel (C_out, C_in, 1, 1) -> Output (C_out, H', W')
-  Parameters: C_in * C_out
-
-Total parameters: K * K * C_in + C_in * C_out
 ```
+Total parameters: $K^2 \cdot C_{in} + C_{in} \cdot C_{out}$
 
 **Computational savings ratio:**
-```
-Separable / Standard = (K*K*C_in + C_in*C_out) / (K*K*C_in*C_out)
-                     = 1/C_out + 1/K^2
 
-For K=3, C_out=256: ratio = 1/256 + 1/9 = 0.115  -> 8.7x savings
-```
+$$\frac{\text{Separable}}{\text{Standard}} = \frac{K^2 C_{in} + C_{in} C_{out}}{K^2 C_{in} C_{out}} = \frac{1}{C_{out}} + \frac{1}{K^2}$$
+
+For $K=3, C_{out}=256$: ratio $= 1/256 + 1/9 = 0.115$ (8.7x savings)
 
 **Code:**
 ```python
@@ -472,10 +448,10 @@ X X X                X . X . X
                      X . X . X
 ```
 
-**Effective kernel size:** `K_eff = K + (K-1) * (dilation - 1)`
+**Effective kernel size:** $K_{eff} = K + (K-1) \cdot (\text{dilation} - 1)$
 
-For K=3, dilation=2: K_eff = 3 + 2*1 = 5
-For K=3, dilation=4: K_eff = 3 + 2*3 = 9
+For $K=3$, dilation=2: $K_{eff} = 3 + 2 \times 1 = 5$
+For $K=3$, dilation=4: $K_{eff} = 3 + 2 \times 3 = 9$
 
 **Code:**
 ```python
@@ -559,22 +535,17 @@ depends on a 5x5 patch of the input. So the receptive field of the second layer 
 
 ### The Formula
 
-For a network with L layers, where layer l has kernel size k_l and stride s_l:
+For a network with $L$ layers, where layer $l$ has kernel size $k_l$ and stride $s_l$:
 
-```
-Receptive field after layer L:
-  RF_L = 1 + sum_{l=1}^{L} (k_l - 1) * prod_{i=1}^{l-1} s_i
-```
+$$RF_L = 1 + \sum_{l=1}^{L} (k_l - 1) \prod_{i=1}^{l-1} s_i$$
 
 Or computed recursively:
 
-```
-RF_0 = 1  (a single pixel)
-RF_l = RF_{l-1} + (k_l - 1) * J_{l-1}
-
-where J_l = J_{l-1} * s_l  (cumulative stride / "jump")
-J_0 = 1
-```
+$$\begin{aligned}
+RF_0 &= 1 \quad \text{(a single pixel)} \\
+RF_l &= RF_{l-1} + (k_l - 1) \cdot J_{l-1} \\
+J_l &= J_{l-1} \cdot s_l \quad \text{(cumulative stride / "jump")}, \quad J_0 = 1
+\end{aligned}$$
 
 ### Worked Example: Three Stacked 3x3 Convolutions
 
@@ -637,27 +608,26 @@ variance, then applying a learned affine transformation.
 
 ### The Math
 
-During training, for a mini-batch B of size m, and for each channel c:
+During training, for a mini-batch $\mathcal{B}$ of size $m$, and for each channel $c$:
 
-```
-mu_c = (1/m) * sum_{i=1}^{m} x_{i,c}                      (batch mean per channel)
-sigma_c^2 = (1/m) * sum_{i=1}^{m} (x_{i,c} - mu_c)^2      (batch variance per channel)
-x_hat_{i,c} = (x_{i,c} - mu_c) / sqrt(sigma_c^2 + epsilon) (normalize)
-y_{i,c} = gamma_c * x_hat_{i,c} + beta_c                    (scale and shift)
-```
+$$\begin{aligned}
+\mu_c &= \frac{1}{m} \sum_{i=1}^{m} x_{i,c} & \text{(batch mean per channel)} \\
+\sigma_c^2 &= \frac{1}{m} \sum_{i=1}^{m} (x_{i,c} - \mu_c)^2 & \text{(batch variance per channel)} \\
+\hat{x}_{i,c} &= \frac{x_{i,c} - \mu_c}{\sqrt{\sigma_c^2 + \epsilon}} & \text{(normalize)} \\
+y_{i,c} &= \gamma_c \hat{x}_{i,c} + \beta_c & \text{(scale and shift)}
+\end{aligned}$$
 
-gamma and beta are learnable parameters (one pair per channel). epsilon is a small constant
-(typically 1e-5) for numerical stability.
+$\gamma$ and $\beta$ are learnable parameters (one pair per channel). $\epsilon$ is a small constant
+(typically $10^{-5}$) for numerical stability.
 
 During inference, use running averages of mean and variance accumulated during training.
 
 ### Parameters
 
-For a conv layer with C channels followed by batch norm:
-```
-BN parameters = 2 * C  (gamma and beta)
-BN also stores running_mean and running_var (2 * C), but these are not optimized.
-```
+For a conv layer with $C$ channels followed by batch norm:
+
+BN parameters $= 2C$ ($\gamma$ and $\beta$).
+BN also stores running mean and running variance ($2C$), but these are not optimized.
 
 ### Code
 
@@ -889,15 +859,15 @@ the number of channels is k0 + L*k (where k0 is the initial channel count).
 
 **Compound scaling insight:**
 
-```
-Standard scaling (pick one):     Compound scaling (all three):
-  - Deeper  (more layers)         depth:  d = alpha^phi
-  - Wider   (more channels)       width:  w = beta^phi
-  - Higher resolution              resolution: r = gamma^phi
+Standard scaling (pick one) vs. Compound scaling (all three):
 
-  with constraint: alpha * beta^2 * gamma^2 ~ 2
-  (so FLOPS ~double per increment of phi)
-```
+$$\begin{aligned}
+\text{depth:} \quad d &= \alpha^\phi \\
+\text{width:} \quad w &= \beta^\phi \\
+\text{resolution:} \quad r &= \gamma^\phi
+\end{aligned}$$
+
+with constraint: $\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2$ (so FLOPs roughly double per increment of $\phi$).
 
 Base architecture (B0) found via NAS, then scaled to B1-B7.
 
@@ -938,8 +908,8 @@ not reveals an optimization failure.
 
 ### The Solution: Residual Learning
 
-Instead of learning the desired mapping H(x) directly, learn the residual F(x) = H(x) - x.
-Then the output is F(x) + x.
+Instead of learning the desired mapping $H(x)$ directly, learn the residual $F(x) = H(x) - x$.
+Then the output is $F(x) + x$.
 
 ```
              +-----+
@@ -950,7 +920,7 @@ Then the output is F(x) + x.
 ```
 
 **Why this helps:** If the optimal function is close to identity, the network only needs to
-push F(x) toward zero. Pushing weights toward zero is easy (weight decay does it naturally).
+push $F(x)$ toward zero. Pushing weights toward zero is easy (weight decay does it naturally).
 Learning a complete identity mapping from scratch is hard.
 
 ### The Residual Block in Detail
@@ -999,16 +969,10 @@ The shortcut uses a 1x1 convolution with appropriate stride to match dimensions:
 
 During backpropagation:
 
-```
-output = F(x) + x
+$$\text{output} = F(x) + x \quad \Rightarrow \quad \frac{\partial\, \text{output}}{\partial x} = \frac{\partial F(x)}{\partial x} + \underbrace{1}_{\text{key}}$$
 
-d(output)/dx = dF(x)/dx + 1
-                          ^
-                          THIS is the key
-```
-
-The `+ 1` term means that the gradient flowing through the skip connection is always at
-least 1 (before scaling by subsequent layers). Even if `dF(x)/dx` is very small (vanishing
+The $+1$ term means that the gradient flowing through the skip connection is always at
+least 1 (before scaling by subsequent layers). Even if $\frac{\partial F(x)}{\partial x}$ is very small (vanishing
 gradient in the conv layers), the gradient through the shortcut is preserved.
 
 In a network with N residual blocks, the gradient from the loss to the input passes through
@@ -1025,7 +989,7 @@ With skip connections, the product includes +1 terms that prevent this collapse.
 
 **Perspective 2: Ensemble Interpretation (Veit et al., 2016)**
 
-A ResNet with N blocks can be "unrolled" into a collection of 2^N paths:
+A ResNet with $N$ blocks can be "unrolled" into a collection of $2^N$ paths:
 ```
 3-block ResNet paths:
 
@@ -1046,14 +1010,12 @@ This means the effective depth is much less than the nominal depth.
 **Perspective 3: Identity Mapping Ease**
 
 A plain network layer must learn to pass information through:
-```
-y = W2 * ReLU(W1 * x + b1) + b2     <-- must configure W1, W2 to approximate identity
-```
+
+$$y = W_2 \cdot \text{ReLU}(W_1 x + b_1) + b_2 \quad \leftarrow \text{must configure } W_1, W_2 \text{ to approximate identity}$$
 
 A residual block only needs to learn the deviation from identity:
-```
-y = W2 * ReLU(W1 * x + b1) + b2 + x  <-- if W1, W2 are small, y ~ x (identity)
-```
+
+$$y = W_2 \cdot \text{ReLU}(W_1 x + b_1) + b_2 + x \quad \leftarrow \text{if } W_1, W_2 \text{ are small, } y \approx x$$
 
 At initialization (small random weights), a residual block is approximately the identity
 function. The network starts "doing nothing" and gradually learns useful transformations.
@@ -1706,7 +1668,7 @@ def visualize_activations(model, input_tensor, layers_to_visualize):
    [ ] Loss function matches the task (CrossEntropy for classification, not MSE)
    [ ] Learning rate is reasonable (start with 1e-3 from scratch, 1e-4 for fine-tuning)
    [ ] Loss decreases after first epoch (if not, likely a bug)
-   [ ] Random baseline: initial loss should be ~-ln(1/C) for C classes with CrossEntropy
+   [ ] Random baseline: initial loss should be $\approx -\ln(1/C)$ for $C$ classes with CrossEntropy
 
 4. TRAINING DYNAMICS
    [ ] Training loss decreasing? If not: LR too high, or bug
@@ -1743,25 +1705,25 @@ def visualize_activations(model, input_tensor, layers_to_visualize):
 
 | Layer Type | Parameters |
 |-----------|-----------|
-| Conv2d(C_in, C_out, K) | (K * K * C_in + 1) * C_out |
-| Conv2d(C_in, C_out, K, bias=False) | K * K * C_in * C_out |
-| Linear(in, out) | (in + 1) * out |
-| BatchNorm2d(C) | 2 * C (learnable) + 2 * C (running stats, not optimized) |
+| Conv2d($C_{in}$, $C_{out}$, $K$) | $(K^2 \cdot C_{in} + 1) \cdot C_{out}$ |
+| Conv2d($C_{in}$, $C_{out}$, $K$, bias=False) | $K^2 \cdot C_{in} \cdot C_{out}$ |
+| Linear(in, out) | $(\text{in} + 1) \cdot \text{out}$ |
+| BatchNorm2d($C$) | $2C$ (learnable) + $2C$ (running stats, not optimized) |
 | MaxPool2d / AvgPool2d | 0 |
 | AdaptiveAvgPool2d | 0 |
 | Dropout | 0 |
 | ReLU | 0 |
-| Depthwise Conv(C, K) | (K * K + 1) * C |
+| Depthwise Conv($C$, $K$) | $(K^2 + 1) \cdot C$ |
 
 ### Output Size Formulas
 
 | Operation | Formula |
 |----------|---------|
-| Conv2d | floor((H + 2*pad - K) / stride) + 1 |
-| ConvTranspose2d | (H - 1) * stride - 2*pad + K + out_pad |
-| MaxPool2d / AvgPool2d | floor((H + 2*pad - K) / stride) + 1 |
-| AdaptiveAvgPool2d(n) | n (any input size) |
-| Dilated Conv | floor((H + 2*pad - K_eff) / stride) + 1, K_eff = K + (K-1)*(d-1) |
+| Conv2d | $\lfloor(H + 2p - K) / s\rfloor + 1$ |
+| ConvTranspose2d | $(H - 1) \cdot s - 2p + K + \text{out\_pad}$ |
+| MaxPool2d / AvgPool2d | $\lfloor(H + 2p - K) / s\rfloor + 1$ |
+| AdaptiveAvgPool2d($n$) | $n$ (any input size) |
+| Dilated Conv | $\lfloor(H + 2p - K_{eff}) / s\rfloor + 1$, where $K_{eff} = K + (K-1)(d-1)$ |
 
 ### Transfer Learning Decision Matrix
 
@@ -1847,10 +1809,10 @@ def unnormalize(tensor, mean=IMAGENET_MEAN, std=IMAGENET_STD):
 
 ## Summary: The Ten Commandments of CNNs
 
-1. **Know the output size formula.** `out = (in + 2*pad - kernel) / stride + 1`.
+1. **Know the output size formula.** $\text{out} = \lfloor(\text{in} + 2 \cdot \text{pad} - \text{kernel}) / \text{stride}\rfloor + 1$.
    You will be asked this in interviews. You will need it when debugging.
 
-2. **Know the parameter count formula.** `params = (K*K*C_in + 1) * C_out`.
+2. **Know the parameter count formula.** $\text{params} = (K^2 \cdot C_{in} + 1) \cdot C_{out}$.
    Count parameters for every layer in every architecture you encounter.
 
 3. **Skip connections are mandatory for deep networks.** If you are building anything deeper

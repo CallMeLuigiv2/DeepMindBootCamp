@@ -1,0 +1,50 @@
+# Transformer from Scratch - Configuration
+
+# Sorting task
+sorting:
+  vocab_size: 103      # 0-99 + PAD(0), SOS(101), EOS(102)
+  seq_len_min: 5
+  seq_len_max: 10
+  num_train_steps: 20000
+  eval_every: 1000
+  eval_samples: 1000
+
+# Language model task
+language_model:
+  context_length: 128
+  corpus_path: "data/shakespeare.txt"
+  num_epochs: 50
+  eval_every: 1000
+
+# Encoder-Decoder Transformer (for sorting)
+transformer:
+  d_model: 128
+  num_heads: 4
+  num_layers: 2
+  d_ff: 256
+  max_len: 50
+  dropout: 0.1
+
+# GPT Decoder-Only (for language model)
+gpt:
+  d_model: 128
+  num_heads: 4
+  num_layers: 4
+  d_ff: 256
+  max_len: 512
+  dropout: 0.1
+
+# Training
+training:
+  batch_size: 64
+  learning_rate: 0.0003
+  warmup_steps: 4000
+  weight_decay: 0.01
+  grad_clip_max_norm: 1.0
+  optimizer: adamw
+
+# Logging
+logging:
+  log_interval: 100
+  save_dir: checkpoints
+  log_dir: logs

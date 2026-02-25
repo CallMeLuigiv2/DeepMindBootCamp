@@ -27,9 +27,9 @@ By the end of this module, you will be able to:
 By the end of this session, the apprentice will be able to:
 1. Define the RL problem formally: agent, environment, state, action, reward, policy, value function.
 2. Formalize sequential decision problems as Markov Decision Processes (MDPs) and state the Markov property.
-3. Derive the Bellman equation for both state-value V(s) and action-value Q(s,a).
-4. Explain why we discount future rewards and the role of gamma.
-5. Distinguish exploration from exploitation and describe epsilon-greedy, UCB, and Thompson sampling strategies.
+3. Derive the Bellman equation for both state-value $V(s)$ and action-value $Q(s,a)$.
+4. Explain why we discount future rewards and the role of $\gamma$.
+5. Distinguish exploration from exploitation and describe $\epsilon$-greedy, UCB, and Thompson sampling strategies.
 6. Navigate the RL taxonomy: model-free vs model-based, on-policy vs off-policy, value-based vs policy-based.
 7. Draw the agent-environment interaction loop and the MDP diagram.
 
@@ -49,7 +49,7 @@ By the end of this session, the apprentice will be able to:
 
 **The RL Problem**
 
-The fundamental setup: an **agent** interacts with an **environment** in discrete time steps. At each step t, the agent observes a **state** s_t, takes an **action** a_t according to its **policy** pi(a|s), receives a **reward** r_t, and transitions to a new state s_{t+1}. The goal is to find a policy that maximizes the expected cumulative reward.
+The fundamental setup: an **agent** interacts with an **environment** in discrete time steps. At each step $t$, the agent observes a **state** $s_t$, takes an **action** $a_t$ according to its **policy** $\pi(a \mid s)$, receives a **reward** $r_t$, and transitions to a new state $s_{t+1}$. The goal is to find a policy that maximizes the expected cumulative reward.
 
 Draw the diagram:
 
@@ -70,45 +70,40 @@ In supervised learning, you have (input, label) pairs. The loss function tells y
 
 **Markov Decision Process**
 
-An MDP is defined by the tuple (S, A, P, R, gamma):
-- S: the set of states
-- A: the set of actions
-- P(s'|s,a): the transition probability -- probability of reaching state s' given state s and action a
-- R(s,a,s'): the reward function
-- gamma: the discount factor, 0 <= gamma < 1
+An MDP is defined by the tuple $(S, A, P, R, \gamma)$:
+- $S$: the set of states
+- $A$: the set of actions
+- $P(s' \mid s, a)$: the transition probability -- probability of reaching state $s'$ given state $s$ and action $a$
+- $R(s, a, s')$: the reward function
+- $\gamma$: the discount factor, $0 \le \gamma < 1$
 
-The **Markov property**: the future depends only on the current state, not the history. P(s_{t+1}|s_t, a_t) = P(s_{t+1}|s_1, a_1, ..., s_t, a_t). This is a strong assumption. When it does not hold (e.g., partially observable environments), we use POMDPs or frame stacking.
+The **Markov property**: the future depends only on the current state, not the history. $P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_1, a_1, \ldots, s_t, a_t)$. This is a strong assumption. When it does not hold (e.g., partially observable environments), we use POMDPs or frame stacking.
 
 **The Bellman Equation**
 
 Derived on the whiteboard. The value of a state is the expected total discounted reward from that state forward:
 
-```
-V^pi(s) = E_pi[r_t + gamma * V^pi(s_{t+1}) | s_t = s]
-```
+$$V^\pi(s) = \mathbb{E}_\pi\!\left[r_t + \gamma \, V^\pi(s_{t+1}) \mid s_t = s\right]$$
 
 The Q-value of a state-action pair:
 
-```
-Q^pi(s,a) = E[r_t + gamma * V^pi(s_{t+1}) | s_t = s, a_t = a]
-```
+$$Q^\pi(s, a) = \mathbb{E}\!\left[r_t + \gamma \, V^\pi(s_{t+1}) \mid s_t = s,\, a_t = a\right]$$
 
 The Bellman optimality equations:
 
-```
-V*(s) = max_a Q*(s,a)
-Q*(s,a) = E[r + gamma * max_{a'} Q*(s', a') | s, a]
-```
+$$V^*(s) = \max_a Q^*(s, a)$$
+
+$$Q^*(s, a) = \mathbb{E}\!\left[r + \gamma \max_{a'} Q^*(s', a') \mid s, a\right]$$
 
 These recursive equations are the foundation of all value-based RL. Every algorithm in Sessions 2-3 is a different strategy for solving them.
 
 **The Discount Factor**
 
-Why gamma < 1? Three reasons: (1) mathematical -- ensures the infinite sum converges, (2) practical -- immediate rewards are more certain than future ones, (3) computational -- gamma controls the effective horizon. With gamma = 0.99, the effective horizon is about 100 steps. With gamma = 0.9, about 10 steps.
+Why $\gamma < 1$? Three reasons: (1) mathematical -- ensures the infinite sum converges, (2) practical -- immediate rewards are more certain than future ones, (3) computational -- $\gamma$ controls the effective horizon. With $\gamma = 0.99$, the effective horizon is about 100 steps. With $\gamma = 0.9$, about 10 steps.
 
 **Exploration vs Exploitation**
 
-- **Epsilon-greedy**: with probability epsilon, take a random action; otherwise, take the greedy action. Simple, effective, but undirected exploration.
+- **Epsilon-greedy**: with probability $\epsilon$, take a random action; otherwise, take the greedy action. Simple, effective, but undirected exploration.
 - **Upper Confidence Bound (UCB)**: choose actions that either have high estimated value OR have been tried few times. Balances optimism with uncertainty.
 - **Thompson Sampling**: maintain a posterior distribution over Q-values, sample from it, act greedily on the sample. Principled Bayesian exploration.
 
@@ -120,16 +115,16 @@ Why gamma < 1? Three reasons: (1) mathematical -- ensures the infinite sum conve
 
 ### Derivation Exercises
 
-1. Derive the Bellman equation for V^pi(s) from the definition of return G_t = sum_{k=0}^{inf} gamma^k r_{t+k}.
-2. Show that V^pi(s) = sum_a pi(a|s) * Q^pi(s,a). Explain what this means.
-3. Derive the Bellman optimality equation for Q*(s,a) from the Bellman equation for Q^pi(s,a).
-4. For a two-state MDP with known transitions and rewards, solve the Bellman equation by hand to find V*.
+1. Derive the Bellman equation for $V^\pi(s)$ from the definition of return $G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}$.
+2. Show that $V^\pi(s) = \sum_a \pi(a \mid s) \, Q^\pi(s,a)$. Explain what this means.
+3. Derive the Bellman optimality equation for $Q^*(s,a)$ from the Bellman equation for $Q^\pi(s,a)$.
+4. For a two-state MDP with known transitions and rewards, solve the Bellman equation by hand to find $V^*$.
 
 ### Coding Tasks
 
 1. Implement a simple GridWorld environment class with states, actions, transitions, and rewards.
-2. For a small MDP (4 states, 2 actions), compute V^pi exactly by solving the linear system of Bellman equations.
-3. Implement epsilon-greedy action selection with decaying epsilon.
+2. For a small MDP (4 states, 2 actions), compute $V^\pi$ exactly by solving the linear system of Bellman equations.
+3. Implement $\epsilon$-greedy action selection with decaying $\epsilon$.
 
 ### Paper References
 
@@ -170,21 +165,17 @@ By the end of this session, the apprentice will be able to:
 
 When the MDP is fully known (transition probabilities and rewards), we can solve for the optimal policy exactly.
 
-*Policy Evaluation*: Given a fixed policy pi, compute V^pi by iterating the Bellman equation:
+*Policy Evaluation*: Given a fixed policy $\pi$, compute $V^\pi$ by iterating the Bellman equation:
 
-```
-V_{k+1}(s) = sum_a pi(a|s) * sum_{s'} P(s'|s,a) * [R(s,a,s') + gamma * V_k(s')]
-```
+$$V_{k+1}(s) = \sum_a \pi(a \mid s) \sum_{s'} P(s' \mid s, a) \left[R(s,a,s') + \gamma \, V_k(s')\right]$$
 
 Repeat until convergence. This is a system of linear equations solved iteratively.
 
-*Policy Iteration*: Alternate between (1) policy evaluation (compute V^pi) and (2) policy improvement (make pi greedy with respect to V^pi). Converges to the optimal policy in a finite number of steps.
+*Policy Iteration*: Alternate between (1) policy evaluation (compute $V^\pi$) and (2) policy improvement (make $\pi$ greedy with respect to $V^\pi$). Converges to the optimal policy in a finite number of steps.
 
 *Value Iteration*: Combine evaluation and improvement into a single step:
 
-```
-V_{k+1}(s) = max_a sum_{s'} P(s'|s,a) * [R(s,a,s') + gamma * V_k(s')]
-```
+$$V_{k+1}(s) = \max_a \sum_{s'} P(s' \mid s, a) \left[R(s,a,s') + \gamma \, V_k(s')\right]$$
 
 This is the Bellman optimality equation applied iteratively.
 
@@ -192,40 +183,36 @@ This is the Bellman optimality equation applied iteratively.
 
 When the MDP is unknown (we can only sample episodes), we estimate values from complete episodes.
 
-*First-visit MC*: For each state s, average the returns G_t following the first visit to s across many episodes.
+*First-visit MC*: For each state $s$, average the returns $G_t$ following the first visit to $s$ across many episodes.
 
-*Every-visit MC*: Average returns following every visit to s.
+*Every-visit MC*: Average returns following every visit to $s$.
 
 MC methods have zero bias (they use actual returns) but high variance (returns vary widely across episodes). They require complete episodes.
 
-*Importance Sampling*: For off-policy MC, correct for the difference between the behavior policy (which generated the data) and the target policy (which we are evaluating). The importance ratio is pi(a|s)/b(a|s) for each step.
+*Importance Sampling*: For off-policy MC, correct for the difference between the behavior policy (which generated the data) and the target policy (which we are evaluating). The importance ratio is $\pi(a \mid s) / b(a \mid s)$ for each step.
 
 **Temporal Difference Learning**
 
-TD methods bootstrap: instead of waiting for the full return G_t, they use an estimate.
+TD methods bootstrap: instead of waiting for the full return $G_t$, they use an estimate.
 
 *TD(0) update*:
 
-```
-V(s_t) <- V(s_t) + alpha * (r_t + gamma * V(s_{t+1}) - V(s_t))
-```
+$$V(s_t) \leftarrow V(s_t) + \alpha \left[r_t + \gamma \, V(s_{t+1}) - V(s_t)\right]$$
 
-The term (r_t + gamma * V(s_{t+1})) is the **TD target**. The difference (TD target - V(s_t)) is the **TD error**. This updates after every step, not after complete episodes. Lower variance than MC (bootstrapping smooths estimates), but introduces bias (the target uses the current imperfect estimate).
+The term $(r_t + \gamma \, V(s_{t+1}))$ is the **TD target**. The difference (TD target $- V(s_t)$) is the **TD error**. This updates after every step, not after complete episodes. Lower variance than MC (bootstrapping smooths estimates), but introduces bias (the target uses the current imperfect estimate).
 
 **Q-Learning**
 
 The most important tabular RL algorithm. Off-policy TD control.
 
-```
-Q(s_t, a_t) <- Q(s_t, a_t) + alpha * (r_t + gamma * max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t))
-```
+$$Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[r_t + \gamma \max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t)\right]$$
 
 Break down every term:
-- Q(s_t, a_t): the current estimate of the value of taking action a_t in state s_t
-- alpha: the learning rate (how much to update)
-- r_t: the immediate reward received
-- gamma * max_{a'} Q(s_{t+1}, a'): the discounted value of the best action in the next state (the bootstrap)
-- r_t + gamma * max_{a'} Q(s_{t+1}, a'): the TD target -- "what we should be closer to"
+- $Q(s_t, a_t)$: the current estimate of the value of taking action $a_t$ in state $s_t$
+- $\alpha$: the learning rate (how much to update)
+- $r_t$: the immediate reward received
+- $\gamma \max_{a'} Q(s_{t+1}, a')$: the discounted value of the best action in the next state (the bootstrap)
+- $r_t + \gamma \max_{a'} Q(s_{t+1}, a')$: the TD target -- "what we should be closer to"
 - The parenthetical difference: the TD error -- "how wrong we were"
 
 Q-Learning is **off-policy** because the target uses max (the optimal action), regardless of what action the agent actually takes. This means it can learn the optimal policy while following an exploratory policy.
@@ -234,26 +221,22 @@ Q-Learning is **off-policy** because the target uses max (the optimal action), r
 
 On-policy TD control.
 
-```
-Q(s_t, a_t) <- Q(s_t, a_t) + alpha * (r_t + gamma * Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t))
-```
+$$Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[r_t + \gamma \, Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t)\right]$$
 
-The difference from Q-Learning: instead of max_{a'} Q(s_{t+1}, a'), we use Q(s_{t+1}, a_{t+1}) -- the value of the action actually taken. SARSA learns the value of the policy it is following, including its exploration. On the cliff-walking problem, SARSA learns a safer path because it accounts for the possibility of random exploration near the cliff.
+The difference from Q-Learning: instead of $\max_{a'} Q(s_{t+1}, a')$, we use $Q(s_{t+1}, a_{t+1})$ -- the value of the action actually taken. SARSA learns the value of the policy it is following, including its exploration. On the cliff-walking problem, SARSA learns a safer path because it accounts for the possibility of random exploration near the cliff.
 
 **n-step Returns and TD(lambda)**
 
 MC uses the full return. TD(0) uses one step. n-step returns use n steps:
 
-```
-G_t^{(n)} = r_t + gamma * r_{t+1} + ... + gamma^{n-1} * r_{t+n-1} + gamma^n * V(s_{t+n})
-```
+$$G_t^{(n)} = r_t + \gamma \, r_{t+1} + \cdots + \gamma^{n-1} r_{t+n-1} + \gamma^n V(s_{t+n})$$
 
-TD(lambda) combines all n-step returns using exponential weighting (lambda). When lambda=0, this is TD(0). When lambda=1, this is MC. Eligibility traces provide an efficient implementation: each state maintains a trace that decays by gamma*lambda and is incremented when visited.
+TD($\lambda$) combines all n-step returns using exponential weighting ($\lambda$). When $\lambda=0$, this is TD(0). When $\lambda=1$, this is MC. Eligibility traces provide an efficient implementation: each state maintains a trace that decays by $\gamma \lambda$ and is incremented when visited.
 
 ### Derivation Exercises
 
-1. Prove that Q-Learning converges to Q* under appropriate conditions (sketch the argument using contraction mappings).
-2. Show that SARSA with a greedy policy (epsilon=0) is equivalent to Q-Learning.
+1. Prove that Q-Learning converges to $Q^*$ under appropriate conditions (sketch the argument using contraction mappings).
+2. Show that SARSA with a greedy policy ($\epsilon=0$) is equivalent to Q-Learning.
 3. Derive the importance sampling ratio for off-policy MC evaluation.
 
 ### Coding Tasks
@@ -300,67 +283,59 @@ By the end of this session, the apprentice will be able to:
 
 **Why Tabular Methods Fail**
 
-A Q-table for Atari has 210 x 160 x 3 x 256 possible pixel configurations per frame. Even with frame stacking (4 frames), the state space is astronomically large. You cannot visit every state-action pair. The solution: use a neural network to approximate Q(s,a; theta), generalizing from seen states to unseen states.
+A Q-table for Atari has 210 x 160 x 3 x 256 possible pixel configurations per frame. Even with frame stacking (4 frames), the state space is astronomically large. You cannot visit every state-action pair. The solution: use a neural network to approximate $Q(s,a;\theta)$, generalizing from seen states to unseen states.
 
 But naively training a neural network on RL data is unstable. Two problems:
-1. **Correlated data**: consecutive transitions (s_t, a_t, r_t, s_{t+1}) are highly correlated. Neural networks trained on correlated data overfit to recent experience and forget old experience.
-2. **Moving target**: the TD target r + gamma * max Q(s', a'; theta) depends on the same parameters theta we are updating. This creates a feedback loop: updating theta changes the targets, which changes the loss, which changes the update direction. Training oscillates or diverges.
+1. **Correlated data**: consecutive transitions $(s_t, a_t, r_t, s_{t+1})$ are highly correlated. Neural networks trained on correlated data overfit to recent experience and forget old experience.
+2. **Moving target**: the TD target $r + \gamma \max Q(s', a'; \theta)$ depends on the same parameters $\theta$ we are updating. This creates a feedback loop: updating $\theta$ changes the targets, which changes the loss, which changes the update direction. Training oscillates or diverges.
 
 **The DQN Paper (Mnih et al., 2015)**
 
 Two innovations that solved both problems:
 
-*Experience Replay*: Store transitions (s, a, r, s') in a replay buffer. Sample random mini-batches from the buffer for training. This breaks temporal correlation (non-consecutive transitions in each batch) and reuses data (each transition is used in multiple updates). DeepMind's original buffer stored 1 million transitions.
+*Experience Replay*: Store transitions $(s, a, r, s')$ in a replay buffer. Sample random mini-batches from the buffer for training. This breaks temporal correlation (non-consecutive transitions in each batch) and reuses data (each transition is used in multiple updates). DeepMind's original buffer stored 1 million transitions.
 
-*Target Network*: Maintain a separate copy of the Q-network, theta_target, that is updated less frequently (every C steps, copy theta to theta_target). Use theta_target to compute TD targets:
+*Target Network*: Maintain a separate copy of the Q-network, $\theta_{\text{target}}$, that is updated less frequently (every $C$ steps, copy $\theta$ to $\theta_{\text{target}}$). Use $\theta_{\text{target}}$ to compute TD targets:
 
-```
-L(theta) = E[(r + gamma * max_{a'} Q(s', a'; theta_target) - Q(s, a; theta))^2]
-```
+$$\mathcal{L}(\theta) = \mathbb{E}\!\left[\left(r + \gamma \max_{a'} Q(s', a'; \theta_{\text{target}}) - Q(s, a; \theta)\right)^2\right]$$
 
 The target is now stable for C steps, breaking the moving target problem.
 
 **The DQN Loss**
 
-```
-L(theta) = E_{(s,a,r,s') ~ D}[(y - Q(s, a; theta))^2]
+$$\mathcal{L}(\theta) = \mathbb{E}_{(s,a,r,s') \sim \mathcal{D}}\!\left[\left(y - Q(s, a; \theta)\right)^2\right]$$
 
-where y = r + gamma * max_{a'} Q(s', a'; theta_target)    (if s' is non-terminal)
-      y = r                                                  (if s' is terminal)
-```
+$$y = \begin{cases} r + \gamma \max_{a'} Q(s', a'; \theta_{\text{target}}) & \text{(non-terminal)} \\ r & \text{(terminal)} \end{cases}$$
 
-This is a regression loss. The "label" y is the TD target, computed with the frozen target network. Gradient descent on this loss moves Q(s,a;theta) toward the target. Note: we do NOT backpropagate through the target y -- it is treated as a fixed target.
+This is a regression loss. The "label" $y$ is the TD target, computed with the frozen target network. Gradient descent on this loss moves $Q(s,a;\theta)$ toward the target. Note: we do NOT backpropagate through the target $y$ -- it is treated as a fixed target.
 
 **Double DQN (van Hasselt et al., 2016)**
 
-Standard DQN overestimates Q-values because max_{a'} Q(s', a') is a biased estimator -- maximization over noisy estimates introduces upward bias. Double DQN decouples action selection from evaluation:
+Standard DQN overestimates Q-values because $\max_{a'} Q(s', a')$ is a biased estimator -- maximization over noisy estimates introduces upward bias. Double DQN decouples action selection from evaluation:
 
-```
-a* = argmax_{a'} Q(s', a'; theta)           # select action with online network
-y = r + gamma * Q(s', a*; theta_target)      # evaluate with target network
-```
+$$a^* = \arg\max_{a'} Q(s', a'; \theta)$$
+
+$$y = r + \gamma \, Q(s', a^*; \theta_{\text{target}})$$
 
 This reduces overestimation and improves performance.
 
 **Dueling DQN (Wang et al., 2016)**
 
 Separate the Q-network into two streams:
-- **Value stream**: V(s) -- how good is this state?
-- **Advantage stream**: A(s,a) -- how much better is this action than average?
+- **Value stream**: $V(s)$ -- how good is this state?
+- **Advantage stream**: $A(s,a)$ -- how much better is this action than average?
 
-```
-Q(s,a) = V(s) + A(s,a) - mean_a A(s,a)
-```
+$$Q(s,a) = V(s) + A(s,a) - \frac{1}{|\mathcal{A}|}\sum_{a'} A(s,a')$$
 
-The subtraction of mean_a A(s,a) ensures identifiability. This architecture learns faster in states where the action choice does not matter much (V dominates).
+The subtraction of $\text{mean}_a \, A(s,a)$ ensures identifiability. This architecture learns faster in states where the action choice does not matter much (V dominates).
 
 **Prioritized Experience Replay (Schaul et al., 2016)**
 
-Not all transitions are equally informative. Transitions with high TD error (the agent was very wrong) should be replayed more often. Sample from the replay buffer with probability proportional to |TD error|^alpha. Use importance sampling weights to correct the bias introduced by non-uniform sampling.
+Not all transitions are equally informative. Transitions with high TD error (the agent was very wrong) should be replayed more often. Sample from the replay buffer with probability proportional to $|\text{TD error}|^\alpha$. Use importance sampling weights to correct the bias introduced by non-uniform sampling.
 
 ### Derivation Exercises
 
-1. Derive the gradient of the DQN loss with respect to theta. Show that it is: -2 * (y - Q(s,a;theta)) * nabla_theta Q(s,a;theta).
+1. Derive the gradient of the DQN loss with respect to $\theta$. Show that it is: $-2(y - Q(s,a;\theta)) \nabla_\theta Q(s,a;\theta)$.
 2. Show mathematically why max over noisy estimates introduces upward bias (Jensen's inequality argument).
 3. Derive the importance sampling correction for Prioritized Experience Replay.
 
@@ -412,7 +387,7 @@ By the end of this session, the apprentice will be able to:
 
 **Why Policy Gradients?**
 
-DQN outputs Q(s,a) for each discrete action, then picks the argmax. But what if the action space is continuous (e.g., the torque applied to a robotic joint)? You cannot enumerate all possible torques. Policy gradient methods directly parameterize the policy pi_theta(a|s) -- e.g., a neural network that outputs the mean and standard deviation of a Gaussian distribution over actions. The agent samples actions from this distribution.
+DQN outputs $Q(s,a)$ for each discrete action, then picks the argmax. But what if the action space is continuous (e.g., the torque applied to a robotic joint)? You cannot enumerate all possible torques. Policy gradient methods directly parameterize the policy $\pi_\theta(a \mid s)$ -- e.g., a neural network that outputs the mean and standard deviation of a Gaussian distribution over actions. The agent samples actions from this distribution.
 
 Additional advantages: policy gradient methods can learn stochastic policies (useful when the optimal strategy involves randomization, as in rock-paper-scissors) and are often more stable in practice.
 
@@ -420,57 +395,43 @@ Additional advantages: policy gradient methods can learn stochastic policies (us
 
 We want to maximize the expected return:
 
-```
-J(theta) = E_{tau ~ pi_theta}[R(tau)]
-
-where R(tau) = sum_{t=0}^{T} gamma^t r_t
-```
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[R(\tau)\right] \quad \text{where } R(\tau) = \sum_{t=0}^{T} \gamma^t r_t$$
 
 The key insight -- the **log-probability trick**:
 
-```
-nabla_theta J(theta) = E_{tau ~ pi_theta}[R(tau) * nabla_theta log P(tau | theta)]
-```
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[R(\tau) \, \nabla_\theta \log P(\tau \mid \theta)\right]$$
 
-Since P(tau|theta) = P(s_0) * prod_t pi_theta(a_t|s_t) * P(s_{t+1}|s_t, a_t), the log decomposes and the transition probabilities cancel:
+Since $P(\tau \mid \theta) = P(s_0) \prod_t \pi_\theta(a_t \mid s_t) P(s_{t+1} \mid s_t, a_t)$, the log decomposes and the transition probabilities cancel:
 
-```
-nabla_theta log P(tau|theta) = sum_t nabla_theta log pi_theta(a_t|s_t)
-```
+$$\nabla_\theta \log P(\tau \mid \theta) = \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
 
 Therefore:
 
-```
-nabla_theta J(theta) = E_{tau ~ pi_theta}[sum_t nabla_theta log pi_theta(a_t|s_t) * G_t]
-```
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \, G_t\right]$$
 
-where G_t = sum_{k=t}^{T} gamma^{k-t} r_k is the return from time t onward. This is the **REINFORCE** estimator.
+where $G_t = \sum_{k=t}^{T} \gamma^{k-t} r_k$ is the return from time $t$ onward. This is the **REINFORCE** estimator.
 
 Interpretation: increase the log-probability of actions that led to high returns, decrease it for actions that led to low returns. The gradient points in the direction that increases the probability of good trajectories.
 
 **Baseline Subtraction**
 
-REINFORCE has high variance because G_t fluctuates wildly across episodes. A **baseline** b(s_t) reduces variance without changing the expected gradient:
+REINFORCE has high variance because $G_t$ fluctuates wildly across episodes. A **baseline** $b(s_t)$ reduces variance without changing the expected gradient:
 
-```
-nabla_theta J(theta) = E[sum_t nabla_theta log pi_theta(a_t|s_t) * (G_t - b(s_t))]
-```
+$$\nabla_\theta J(\theta) = \mathbb{E}\!\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \left(G_t - b(s_t)\right)\right]$$
 
-Why no bias? Because E[nabla_theta log pi(a|s) * b(s)] = b(s) * E[nabla_theta log pi(a|s)] = b(s) * nabla_theta sum_a pi(a|s) = b(s) * nabla_theta 1 = 0.
+Why no bias? Because $\mathbb{E}[\nabla_\theta \log \pi(a \mid s) \, b(s)] = b(s) \, \mathbb{E}[\nabla_\theta \log \pi(a \mid s)] = b(s) \, \nabla_\theta \sum_a \pi(a \mid s) = b(s) \, \nabla_\theta 1 = 0$.
 
-The optimal baseline (minimizing variance) is close to V^pi(s_t). In practice, we learn a value function V_phi(s) as the baseline.
+The optimal baseline (minimizing variance) is close to $V^\pi(s_t)$. In practice, we learn a value function $V_\phi(s)$ as the baseline.
 
 **Actor-Critic (A2C)**
 
 Combine a policy (the **actor**) with a value function (the **critic**):
-- The **actor** pi_theta(a|s) selects actions.
-- The **critic** V_phi(s) evaluates states and provides the baseline.
+- The **actor** $\pi_\theta(a \mid s)$ selects actions.
+- The **critic** $V_\phi(s)$ evaluates states and provides the baseline.
 
-The advantage A(s_t, a_t) = Q(s_t, a_t) - V(s_t) measures how much better action a_t is compared to the average. We estimate it using the TD error:
+The advantage $A(s_t, a_t) = Q(s_t, a_t) - V(s_t)$ measures how much better action $a_t$ is compared to the average. We estimate it using the TD error:
 
-```
-A_t = r_t + gamma * V_phi(s_{t+1}) - V_phi(s_t)
-```
+$$A_t = r_t + \gamma \, V_\phi(s_{t+1}) - V_\phi(s_t)$$
 
 The actor update uses the advantage as the "reward signal." The critic is trained to minimize the value prediction error.
 
@@ -478,19 +439,15 @@ The actor update uses the advantage as the "reward signal." The critic is traine
 
 GAE (Schulman et al., 2016) provides a smooth interpolation between the one-step TD advantage (low variance, high bias) and the full Monte Carlo advantage (high variance, low bias):
 
-```
-A_t^{GAE} = sum_{l=0}^{T-t} (gamma * lambda)^l * delta_{t+l}
+$$A_t^{\text{GAE}} = \sum_{l=0}^{T-t} (\gamma \lambda)^l \delta_{t+l} \quad \text{where } \delta_t = r_t + \gamma \, V(s_{t+1}) - V(s_t)$$
 
-where delta_t = r_t + gamma * V(s_{t+1}) - V(s_t)
-```
-
-lambda=0 gives the one-step TD estimate. lambda=1 gives the MC estimate. Typical values: lambda=0.95.
+$\lambda=0$ gives the one-step TD estimate. $\lambda=1$ gives the MC estimate. Typical values: $\lambda=0.95$.
 
 ### Derivation Exercises
 
-1. Derive the policy gradient theorem from scratch, starting from J(theta) = E[R(tau)].
-2. Prove that the baseline b(s) does not change the expected gradient (the "baseline is unbiased" proof).
-3. Show that the advantage A(s,a) = Q(s,a) - V(s) and that the one-step TD error is an unbiased estimate of the advantage.
+1. Derive the policy gradient theorem from scratch, starting from $J(\theta) = \mathbb{E}[R(\tau)]$.
+2. Prove that the baseline $b(s)$ does not change the expected gradient (the "baseline is unbiased" proof).
+3. Show that the advantage $A(s,a) = Q(s,a) - V(s)$ and that the one-step TD error is an unbiased estimate of the advantage.
 4. Derive the GAE formula by expanding the geometric sum of TD errors.
 
 ### Coding Tasks
@@ -543,12 +500,9 @@ Policy gradient updates can be catastrophically large. A single bad gradient ste
 
 TRPO constrains the policy update so the new policy stays close to the old policy:
 
-```
-maximize   E[r_t(theta) * A_t]
-subject to E[KL(pi_old || pi_new)] <= delta
-```
+$$\max_\theta \; \mathbb{E}\!\left[r_t(\theta) A_t\right] \quad \text{subject to } \mathbb{E}\!\left[D_{\text{KL}}(\pi_{\text{old}} \| \pi_{\text{new}})\right] \le \delta$$
 
-where r_t(theta) = pi_theta(a_t|s_t) / pi_{theta_old}(a_t|s_t) is the probability ratio.
+where $r_t(\theta) = \pi_\theta(a_t \mid s_t) / \pi_{\theta_{\text{old}}}(a_t \mid s_t)$ is the probability ratio.
 
 The KL constraint ensures the policy does not change too much. But computing the constrained optimization requires second-order methods (computing the Fisher information matrix), which is expensive and complex to implement.
 
@@ -556,32 +510,28 @@ The KL constraint ensures the policy does not change too much. But computing the
 
 PPO replaces the hard KL constraint with a clipped objective that achieves a similar effect with first-order optimization:
 
-```
-L^{CLIP}(theta) = E[min(r_t * A_t, clip(r_t, 1-eps, 1+eps) * A_t)]
-```
+$$\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}\!\left[\min\!\left(r_t A_t,\; \text{clip}(r_t,\, 1-\epsilon,\, 1+\epsilon) A_t\right)\right]$$
 
 How this works:
-- **r_t = pi_new(a_t|s_t) / pi_old(a_t|s_t)**: the probability ratio. r_t = 1 means the new and old policies agree.
-- **A_t**: the advantage estimate (from GAE).
-- **clip(r_t, 1-eps, 1+eps)**: clips the ratio to the interval [1-eps, 1+eps], typically eps=0.2.
-- **min(...)**: takes the pessimistic (lower) bound.
+- $r_t = \pi_{\text{new}}(a_t \mid s_t) / \pi_{\text{old}}(a_t \mid s_t)$: the probability ratio. $r_t = 1$ means the new and old policies agree.
+- $A_t$: the advantage estimate (from GAE).
+- $\text{clip}(r_t, 1-\epsilon, 1+\epsilon)$: clips the ratio to the interval $[1-\epsilon,\, 1+\epsilon]$, typically $\epsilon=0.2$.
+- $\min(\cdots)$: takes the pessimistic (lower) bound.
 
 Analysis by case:
-- If A_t > 0 (good action): we want to increase r_t (make the action more likely). But the clip prevents r_t from exceeding 1+eps. This stops the policy from changing too much.
-- If A_t < 0 (bad action): we want to decrease r_t (make the action less likely). But the clip prevents r_t from going below 1-eps. Again, bounded change.
+- If $A_t > 0$ (good action): we want to increase $r_t$ (make the action more likely). But the clip prevents $r_t$ from exceeding $1+\epsilon$. This stops the policy from changing too much.
+- If $A_t < 0$ (bad action): we want to decrease $r_t$ (make the action less likely). But the clip prevents $r_t$ from going below $1-\epsilon$. Again, bounded change.
 
 The min ensures we always take the more conservative estimate.
 
 **The Complete PPO Loss**
 
-```
-L(theta) = L^{CLIP}(theta) - c_1 * L^{VF}(theta) + c_2 * H[pi_theta]
-```
+$$\mathcal{L}(\theta) = \mathcal{L}^{\text{CLIP}}(\theta) - c_1 \mathcal{L}^{\text{VF}}(\theta) + c_2 H[\pi_\theta]$$
 
 Three terms:
-- **L^{CLIP}**: the clipped surrogate objective (maximize).
-- **L^{VF}**: the value function loss, typically MSE between V_phi(s) and the actual return (minimize).
-- **H[pi_theta]**: entropy bonus, encourages exploration by penalizing overly deterministic policies (maximize). This prevents premature convergence to a suboptimal deterministic policy.
+- $\mathcal{L}^{\text{CLIP}}$: the clipped surrogate objective (maximize).
+- $\mathcal{L}^{\text{VF}}$: the value function loss, typically MSE between $V_\phi(s)$ and the actual return (minimize).
+- $H[\pi_\theta]$: entropy bonus, encourages exploration by penalizing overly deterministic policies (maximize). This prevents premature convergence to a suboptimal deterministic policy.
 
 **Practical PPO Details**
 
@@ -594,8 +544,8 @@ Three terms:
 ### Derivation Exercises
 
 1. Derive the PPO clipped objective from the TRPO surrogate objective. Show that clipping the ratio is a conservative approximation to the KL constraint.
-2. For a Gaussian policy pi(a|s) = N(mu(s), sigma^2), derive r_t in closed form.
-3. Show that when eps=0, PPO reduces to no update (r_t is clipped to exactly 1).
+2. For a Gaussian policy $\pi(a \mid s) = \mathcal{N}(\mu(s), \sigma^2)$, derive $r_t$ in closed form.
+3. Show that when $\epsilon=0$, PPO reduces to no update ($r_t$ is clipped to exactly 1).
 
 ### Coding Tasks
 
@@ -649,27 +599,21 @@ Supervised fine-tuning (SFT) teaches a language model to follow instructions by 
 
 **The RLHF Pipeline**
 
-Step 1: **Supervised Fine-Tuning (SFT)**. Start with a pretrained LLM. Fine-tune on high-quality (prompt, response) pairs to create a model that can follow instructions. This is the starting point for RLHF -- the SFT model is pi_ref.
+Step 1: **Supervised Fine-Tuning (SFT)**. Start with a pretrained LLM. Fine-tune on high-quality (prompt, response) pairs to create a model that can follow instructions. This is the starting point for RLHF -- the SFT model is $\pi_{\text{ref}}$.
 
-Step 2: **Reward Modeling**. Collect human preference data: for each prompt x, show two responses (y_1, y_2) to a human annotator who indicates which is better. Train a reward model R_phi(x, y) using the Bradley-Terry model:
+Step 2: **Reward Modeling**. Collect human preference data: for each prompt $x$, show two responses $(y_1, y_2)$ to a human annotator who indicates which is better. Train a reward model $R_\phi(x, y)$ using the Bradley-Terry model:
 
-```
-P(y_1 > y_2 | x) = sigma(R_phi(x, y_1) - R_phi(x, y_2))
-```
+$$P(y_1 \succ y_2 \mid x) = \sigma\!\left(R_\phi(x, y_1) - R_\phi(x, y_2)\right)$$
 
 Loss:
 
-```
-L(phi) = -E[log sigma(R_phi(x, y_w) - R_phi(x, y_l))]
-```
+$$\mathcal{L}(\phi) = -\mathbb{E}\!\left[\log \sigma\!\left(R_\phi(x, y_w) - R_\phi(x, y_l)\right)\right]$$
 
-where y_w is the preferred (winning) response and y_l is the dispreferred (losing) response.
+where $y_w$ is the preferred (winning) response and $y_l$ is the dispreferred (losing) response.
 
 Step 3: **PPO Fine-Tuning**. The language model is the policy. It generates responses (sequences of token actions) given prompts (states). The reward model scores the complete generation. Optimize:
 
-```
-J(theta) = E_{x ~ D, y ~ pi_theta(.|x)}[R_phi(x, y)] - beta * KL(pi_theta || pi_ref)
-```
+$$J(\theta) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta(\cdot \mid x)}\!\left[R_\phi(x, y)\right] - \beta \, D_{\text{KL}}\!\left[\pi_\theta(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x)\right]$$
 
 The KL penalty keeps the fine-tuned model close to the SFT model, preventing reward hacking (the model finding degenerate outputs that exploit the reward model but are not actually good).
 
@@ -677,9 +621,7 @@ The KL penalty keeps the fine-tuned model close to the SFT model, preventing rew
 
 Rafailov et al. (2023) showed that the RLHF objective has a closed-form optimal solution, which allows training directly on preference data without a separate reward model:
 
-```
-L_{DPO}(theta) = -E[log sigma(beta * (log pi_theta(y_w|x)/pi_ref(y_w|x) - log pi_theta(y_l|x)/pi_ref(y_l|x)))]
-```
+$$\mathcal{L}_{\text{DPO}}(\theta) = -\mathbb{E}\!\left[\log \sigma\!\left(\beta \left(\log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}\right)\right)\right]$$
 
 DPO is simpler (no reward model, no PPO loop), more stable, and often competitive with PPO-based RLHF. It has become the preferred approach for many teams.
 
@@ -697,11 +639,9 @@ MCTS builds a search tree incrementally through four phases:
 
 The UCB formula for tree traversal:
 
-```
-UCB(s, a) = Q(s, a) + c * sqrt(ln N(s) / N(s, a))
-```
+$$\text{UCB}(s, a) = Q(s, a) + c \sqrt{\frac{\ln N(s)}{N(s, a)}}$$
 
-**AlphaGo** replaced the simulation phase with a value network (V_theta(s) estimates the probability of winning from state s) and used a policy network (pi_theta(a|s) estimates the probability of good moves) to guide selection. This combination of neural networks with MCTS was the key innovation.
+**AlphaGo** replaced the simulation phase with a value network ($V_\theta(s)$ estimates the probability of winning from state $s$) and used a policy network ($\pi_\theta(a \mid s)$ estimates the probability of good moves) to guide selection. This combination of neural networks with MCTS was the key innovation.
 
 **AlphaProof** applies the same paradigm to mathematical theorem proving: a language model proposes proof steps, MCTS searches the proof tree, and a value network evaluates partial proofs. This is RL applied to reasoning.
 
@@ -709,7 +649,7 @@ UCB(s, a) = Q(s, a) + c * sqrt(ln N(s) / N(s, a))
 
 1. Derive the Bradley-Terry model from the assumption that response quality follows a latent score plus Gumbel noise.
 2. Derive the DPO loss from the RLHF objective by substituting the closed-form optimal policy.
-3. Show that the KL penalty in RLHF is equivalent to an entropy-regularized reward: effective_reward = R(x,y) - beta * log(pi_theta(y|x)/pi_ref(y|x)).
+3. Show that the KL penalty in RLHF is equivalent to an entropy-regularized reward: $\text{effective reward} = R(x,y) - \beta \log(\pi_\theta(y \mid x) / \pi_{\text{ref}}(y \mid x))$.
 
 ### Coding Tasks
 

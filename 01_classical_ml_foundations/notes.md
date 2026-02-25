@@ -26,11 +26,9 @@ We have data: n samples, each with d features. Arrange them as:
 
 Our model is:
 
-```
-y_hat = X @ w + b
-```
+$$\hat{y} = Xw + b$$
 
-Where `w` is a weight vector of shape (d,) and `b` is a scalar bias. This is the hypothesis — a linear function of the features.
+Where $w$ is a weight vector of shape (d,) and $b$ is a scalar bias. This is the hypothesis — a linear function of the features.
 
 **Intuition:** We are assuming the target is (approximately) a weighted sum of the features plus some constant offset. The job is to find the weights.
 
@@ -38,10 +36,7 @@ Where `w` is a weight vector of shape (d,) and `b` is a scalar bias. This is the
 
 We need to measure how wrong our predictions are. The standard choice is Mean Squared Error:
 
-```
-L(w, b) = (1/n) * sum_{i=1}^{n} (y_hat_i - y_i)^2
-         = (1/n) * ||X @ w + b - y||^2
-```
+$$\mathcal{L}(w, b) = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2 = \frac{1}{n} \|Xw + b - y\|^2$$
 
 **What each term means:**
 - `y_hat_i - y_i`: the error (residual) for sample i
@@ -91,23 +86,19 @@ This is the single most important algorithm in this entire course. Every neural 
 
 **The update rule:**
 
-```
-w := w - lr * dL/dw
-b := b - lr * dL/db
-```
+$$w := w - \eta \frac{\partial \mathcal{L}}{\partial w} \qquad b := b - \eta \frac{\partial \mathcal{L}}{\partial b}$$
 
-Where `lr` is the learning rate (step size) and `dL/dw`, `dL/db` are the partial derivatives of the loss with respect to the parameters.
+Where $\eta$ is the learning rate (step size) and $\frac{\partial \mathcal{L}}{\partial w}$, $\frac{\partial \mathcal{L}}{\partial b}$ are the partial derivatives of the loss with respect to the parameters.
 
 **Deriving the gradient for MSE:**
 
-```
-L = (1/n) * sum (X @ w + b - y)^2
+$$\mathcal{L} = \frac{1}{n} \sum (Xw + b - y)^2$$
 
-Let e = X @ w + b - y    (the residual vector, shape (n,))
+Let $e = Xw + b - y$ (the residual vector, shape $(n,)$):
 
-dL/dw = (2/n) * X^T @ e = (2/n) * X^T @ (X @ w + b - y)
-dL/db = (2/n) * sum(e)   = (2/n) * 1^T @ (X @ w + b - y)
-```
+$$\frac{\partial \mathcal{L}}{\partial w} = \frac{2}{n} X^T e = \frac{2}{n} X^T (Xw + b - y)$$
+
+$$\frac{\partial \mathcal{L}}{\partial b} = \frac{2}{n} \sum e = \frac{2}{n} \mathbf{1}^T (Xw + b - y)$$
 
 **What this means, term by term:**
 - `e = X @ w + b - y`: how wrong we are for each sample
@@ -220,21 +211,19 @@ Loss                                   Loss
 
 For linear regression (and only linear regression), we can solve for the optimal weights directly:
 
-```
-w* = (X^T X)^{-1} X^T y
-```
+$$w^* = (X^T X)^{-1} X^T y$$
 
 **Derivation sketch:**
-1. Write L(w) = (1/n) ||Xw - y||^2 (absorbing bias into X by adding a column of ones).
-2. Take the gradient: dL/dw = (2/n) X^T (Xw - y).
-3. Set it to zero: X^T Xw = X^T y.
-4. Solve: w = (X^T X)^{-1} X^T y.
+1. Write $\mathcal{L}(w) = \frac{1}{n} \|Xw - y\|^2$ (absorbing bias into $X$ by adding a column of ones).
+2. Take the gradient: $\frac{\partial \mathcal{L}}{\partial w} = \frac{2}{n} X^T (Xw - y)$.
+3. Set it to zero: $X^T Xw = X^T y$.
+4. Solve: $w = (X^T X)^{-1} X^T y$.
 
 **When to use the normal equation vs. gradient descent:**
 
 | Property | Normal Equation | Gradient Descent |
 |----------|----------------|-----------------|
-| Compute time | O(d^3) for matrix inversion | O(n * d * k) for k iterations |
+| Compute time | $O(d^3)$ for matrix inversion | $O(ndk)$ for $k$ iterations |
 | Better when... | d is small (< ~10,000) | d is large or n is very large |
 | Needs learning rate? | No | Yes |
 | Iterative? | No (one-shot) | Yes |
@@ -276,14 +265,14 @@ Each feature gets range [0, 1].
 
 ### 1.9 Polynomial Features
 
-Linear regression assumes `y = w1*x1 + w2*x2 + b`. But what if the true relationship is nonlinear?
+Linear regression assumes $y = w_1 x_1 + w_2 x_2 + b$. But what if the true relationship is nonlinear?
 
 **The trick:** Create new features that are powers and interactions of existing features.
 
-For a single feature x, degree 2 polynomial features are: [x, x^2]
-For two features (x1, x2), degree 2: [x1, x2, x1^2, x1*x2, x2^2]
+For a single feature $x$, degree 2 polynomial features are: $[x, x^2]$
+For two features $(x_1, x_2)$, degree 2: $[x_1, x_2, x_1^2, x_1 x_2, x_2^2]$
 
-The model is still *linear in its parameters* — it is w1*x + w2*x^2 + b, which is linear in (w1, w2, b). But it can model quadratic relationships in the original feature.
+The model is still *linear in its parameters* — it is $w_1 x + w_2 x^2 + b$, which is linear in $(w_1, w_2, b)$. But it can model quadratic relationships in the original feature.
 
 ```python
 from sklearn.preprocessing import PolynomialFeatures
@@ -308,16 +297,14 @@ We need a function that maps any real number to the range (0, 1). Enter the sigm
 
 ### 2.2 The Sigmoid Function
 
-```
-sigma(z) = 1 / (1 + exp(-z))
-```
+$$\sigma(z) = \frac{1}{1 + e^{-z}}$$
 
 **Properties:**
-- Output is always in (0, 1) — valid probability.
-- sigma(0) = 0.5 (50/50 when the linear score is zero).
-- As z goes to positive infinity, sigma(z) goes to 1.
-- As z goes to negative infinity, sigma(z) goes to 0.
-- The derivative is: sigma'(z) = sigma(z) * (1 - sigma(z)).
+- Output is always in $(0, 1)$ --- valid probability.
+- $\sigma(0) = 0.5$ (50/50 when the linear score is zero).
+- As $z \to +\infty$, $\sigma(z) \to 1$.
+- As $z \to -\infty$, $\sigma(z) \to 0$.
+- The derivative is: $\sigma'(z) = \sigma(z)(1 - \sigma(z))$.
 
 ```
 Sigmoid function:
@@ -335,9 +322,8 @@ Sigmoid function:
 ```
 
 **Logistic regression model:**
-```
-P(y=1 | x) = sigma(x @ w + b) = 1 / (1 + exp(-(x @ w + b)))
-```
+
+$$P(y=1 \mid x) = \sigma(x^T w + b) = \frac{1}{1 + e^{-(x^T w + b)}}$$
 
 The linear combination x @ w + b produces a "score" (called the logit). The sigmoid converts it to a probability.
 
@@ -346,50 +332,42 @@ The linear combination x @ w + b produces a "score" (called the logit). The sigm
 This derivation is important. It shows that cross-entropy is not an arbitrary choice — it follows inevitably from assuming our model outputs Bernoulli probabilities.
 
 **Step 1: Single sample likelihood.**
-If y is 0 or 1 and our model predicts probability p = sigma(x @ w + b):
+If $y$ is 0 or 1 and our model predicts probability $p = \sigma(x^T w + b)$:
 
-```
-P(y | x; w, b) = p^y * (1-p)^(1-y)
-```
+$$P(y \mid x; w, b) = p^y (1-p)^{1-y}$$
 
 Check: if y=1, this is p. If y=0, this is (1-p). Correct.
 
 **Step 2: Full dataset likelihood.**
 Assuming samples are independent:
 
-```
-L(w, b) = product_{i=1}^{n} p_i^{y_i} * (1-p_i)^{1-y_i}
-```
+$$\mathcal{L}(w, b) = \prod_{i=1}^{n} p_i^{y_i} (1-p_i)^{1-y_i}$$
 
 **Step 3: Log-likelihood.**
 Products are numerically unstable and hard to differentiate. Take the log:
 
-```
-log L(w, b) = sum_{i=1}^{n} [ y_i * log(p_i) + (1-y_i) * log(1-p_i) ]
-```
+$$\log \mathcal{L}(w, b) = \sum_{i=1}^{n} \left[ y_i \log(p_i) + (1-y_i) \log(1-p_i) \right]$$
 
 **Step 4: Negate and normalize.**
 We want to *minimize* a loss (not maximize a likelihood), so negate:
 
-```
-BCE(w, b) = -(1/n) * sum_{i=1}^{n} [ y_i * log(p_i) + (1-y_i) * log(1-p_i) ]
-```
+$$\text{BCE}(w, b) = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \log(p_i) + (1-y_i) \log(1-p_i) \right]$$
 
 This is **binary cross-entropy**. Every term is justified by probability theory.
 
 **What each term means:**
-- `y_i * log(p_i)`: when the true label is 1, we want p_i to be high (close to 1), so log(p_i) is close to 0 (small loss).
-- `(1-y_i) * log(1-p_i)`: when the true label is 0, we want p_i to be low (close to 0), so log(1-p_i) is close to 0 (small loss).
+- $y_i \log(p_i)$: when the true label is 1, we want $p_i$ to be high (close to 1), so $\log(p_i)$ is close to 0 (small loss).
+- $(1-y_i) \log(1-p_i)$: when the true label is 0, we want $p_i$ to be low (close to 0), so $\log(1-p_i)$ is close to 0 (small loss).
 - The negative sign makes this positive.
-- `(1/n)` averages over samples.
+- $\frac{1}{n}$ averages over samples.
 
 ### 2.4 Why Cross-Entropy Instead of MSE for Classification?
 
 **The gradient argument.** Consider a sample with true label y=1 and predicted probability p close to 0 (very wrong prediction).
 
-MSE gradient: `dL/dp = 2(p - 1)`. This is around -2. A fixed-magnitude signal.
+MSE gradient: $\frac{\partial L}{\partial p} = 2(p - 1)$. This is around -2. A fixed-magnitude signal.
 
-Cross-entropy gradient: `dL/dp = -1/p`. When p = 0.01, this is -100. When p = 0.001, this is -1000. The gradient is *enormous* when the prediction is very wrong.
+Cross-entropy gradient: $\frac{\partial L}{\partial p} = -\frac{1}{p}$. When $p = 0.01$, this is $-100$. When $p = 0.001$, this is $-1000$. The gradient is *enormous* when the prediction is very wrong.
 
 Cross-entropy provides a strong corrective signal for confident wrong predictions. MSE does not. This means cross-entropy trains faster and avoids the "vanishing gradient" problem for classification.
 
@@ -399,12 +377,11 @@ Cross-entropy provides a strong corrective signal for confident wrong prediction
 
 This is one of the cleanest results in ML:
 
-```
-dL/dw = (1/n) * X^T @ (sigma(X @ w + b) - y)
-dL/db = (1/n) * sum(sigma(X @ w + b) - y)
-```
+$$\frac{\partial L}{\partial w} = \frac{1}{n} X^T (\sigma(Xw + b) - y)$$
 
-**What this means:** The gradient is proportional to X transposed times the prediction error. The same structure as linear regression. This is not a coincidence — both are generalized linear models.
+$$\frac{\partial L}{\partial b} = \frac{1}{n} \sum_{i=1}^{n} (\sigma(x_i^T w + b) - y_i)$$
+
+**What this means:** The gradient is proportional to $X^T$ times the prediction error. The same structure as linear regression. This is not a coincidence — both are generalized linear models.
 
 ```python
 def logistic_gradient(X, y, w, b):
@@ -418,17 +395,16 @@ def logistic_gradient(X, y, w, b):
 
 ### 2.6 Decision Boundaries
 
-The decision boundary is the set of points where P(y=1|x) = 0.5, which is where the logit is zero:
+The decision boundary is the set of points where $P(y=1 \mid x) = 0.5$, which is where the logit is zero:
 
-```
-x @ w + b = 0
-```
+$$x^T w + b = 0$$
 
-For 2D features (x1, x2):
-```
-w1*x1 + w2*x2 + b = 0
-x2 = -(w1*x1 + b) / w2
-```
+For 2D features $(x_1, x_2)$:
+
+$$\begin{aligned}
+w_1 x_1 + w_2 x_2 + b &= 0 \\
+x_2 &= -\frac{w_1 x_1 + b}{w_2}
+\end{aligned}$$
 
 This is a straight line. Logistic regression can only produce linear decision boundaries.
 
@@ -454,9 +430,7 @@ Every classification metric is derived from these four numbers.
 
 #### Accuracy
 
-```
-Accuracy = (TP + TN) / (TP + TN + FP + FN)
-```
+$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
 
 **The problem:** On a dataset with 95% negative and 5% positive, a model that *always* predicts negative has 95% accuracy. Useless but high accuracy.
 
@@ -464,9 +438,7 @@ Accuracy = (TP + TN) / (TP + TN + FP + FN)
 
 #### Precision
 
-```
-Precision = TP / (TP + FP)
-```
+$$\text{Precision} = \frac{TP}{TP + FP}$$
 
 **Plain English:** "Of all the things I said were positive, what fraction actually were?"
 
@@ -474,9 +446,7 @@ Precision = TP / (TP + FP)
 
 #### Recall (Sensitivity, True Positive Rate)
 
-```
-Recall = TP / (TP + FN)
-```
+$$\text{Recall} = \frac{TP}{TP + FN}$$
 
 **Plain English:** "Of all the things that were actually positive, what fraction did I catch?"
 
@@ -484,9 +454,7 @@ Recall = TP / (TP + FN)
 
 #### F1-Score
 
-```
-F1 = 2 * (Precision * Recall) / (Precision + Recall)
-```
+$$F_1 = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
 
 The harmonic mean of precision and recall. The harmonic mean is used (rather than the arithmetic mean) because it penalizes imbalance: if either precision or recall is very low, F1 is pulled down sharply.
 
@@ -557,11 +525,10 @@ def compute_roc(y_true, y_scores):
 For K classes, we want to output K probabilities that sum to 1.
 
 **The softmax function:**
-```
-softmax(z_k) = exp(z_k) / sum_{j=1}^{K} exp(z_j)
-```
 
-Where z is a vector of K "logits" (raw scores, one per class).
+$$\text{softmax}(z_k) = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}$$
+
+Where $z$ is a vector of $K$ "logits" (raw scores, one per class).
 
 **What it does:** Converts arbitrary real-valued scores into a valid probability distribution. Larger logits get larger probabilities. The exponential amplifies differences.
 
@@ -575,18 +542,15 @@ def softmax(z):
 
 This prevents overflow from exp(large number) and does not change the result (it cancels out).
 
-**Connection to sigmoid:** For 2 classes, softmax reduces to the sigmoid function. Proof: Let the logits be [z, 0]. Then softmax gives [exp(z)/(exp(z)+1), 1/(exp(z)+1)] = [sigmoid(z), 1-sigmoid(z)].
+**Connection to sigmoid:** For 2 classes, softmax reduces to the sigmoid function. Proof: Let the logits be $[z, 0]$. Then softmax gives $\left[\frac{e^z}{e^z+1},\; \frac{1}{e^z+1}\right] = [\sigma(z),\; 1-\sigma(z)]$.
 
 **Categorical cross-entropy** (the multi-class loss):
-```
-L = -(1/n) * sum_{i=1}^{n} sum_{k=1}^{K} y_{ik} * log(p_{ik})
-```
 
-Where y is one-hot encoded. Only the term for the true class survives (since all other y_{ik} are 0), so this simplifies to:
+$$L = -\frac{1}{n} \sum_{i=1}^{n} \sum_{k=1}^{K} y_{ik} \log(p_{ik})$$
 
-```
-L = -(1/n) * sum_{i=1}^{n} log(p_{i, true_class_i})
-```
+Where $y$ is one-hot encoded. Only the term for the true class survives (since all other $y_{ik}$ are 0), so this simplifies to:
+
+$$L = -\frac{1}{n} \sum_{i=1}^{n} \log(p_{i,\, \text{true class}_i})$$
 
 **Plain English:** For each sample, look at the predicted probability for the correct class. Take its log. Negate and average. We want the model to assign high probability to the correct class.
 
@@ -619,41 +583,40 @@ This makes SVMs robust to outliers (points far from the boundary do not matter) 
 
 ### 3.3 The Optimization Problem
 
-The SVM finds the hyperplane w^T x + b = 0 that maximizes the margin 2/||w||, subject to all points being correctly classified with margin at least 1.
+The SVM finds the hyperplane $w^T x + b = 0$ that maximizes the margin $\frac{2}{\|w\|}$, subject to all points being correctly classified with margin at least 1.
 
 **Primal formulation:**
-```
-minimize    (1/2) * ||w||^2
-subject to  y_i * (w^T x_i + b) >= 1  for all i
-```
+
+$$\begin{aligned}
+\min_{w, b} \quad & \frac{1}{2} \|w\|^2 \\
+\text{s.t.} \quad & y_i (w^T x_i + b) \geq 1 \quad \forall\, i
+\end{aligned}$$
 
 **What this means:**
-- `(1/2) * ||w||^2`: minimizing the weight magnitude maximizes the margin (margin = 2/||w||).
-- `y_i * (w^T x_i + b) >= 1`: every sample must be on the correct side of the boundary, with a margin of at least 1.
+- $\frac{1}{2} \|w\|^2$: minimizing the weight magnitude maximizes the margin (margin $= \frac{2}{\|w\|}$).
+- $y_i (w^T x_i + b) \geq 1$: every sample must be on the correct side of the boundary, with a margin of at least 1.
 
 This is a convex quadratic program with linear constraints. It has a unique global solution.
 
 ### 3.4 The Kernel Trick
 
-**The problem:** Real data is rarely linearly separable. We could map the data to a higher-dimensional space where it becomes separable. For example, 2D points on concentric circles become separable in 3D by adding a "radius" feature (x1^2 + x2^2).
+**The problem:** Real data is rarely linearly separable. We could map the data to a higher-dimensional space where it becomes separable. For example, 2D points on concentric circles become separable in 3D by adding a "radius" feature ($x_1^2 + x_2^2$).
 
 **The computational problem:** Mapping to high-dimensional space and computing dot products there is expensive. For some mappings, the feature space is infinite-dimensional.
 
-**The kernel trick:** The SVM optimization and prediction depend on the data ONLY through pairwise dot products x_i^T x_j. If we have a function K(x_i, x_j) that computes the dot product in the high-dimensional feature space WITHOUT explicitly computing the mapping, we get the power of the high-dimensional representation at the cost of a simple function evaluation.
+**The kernel trick:** The SVM optimization and prediction depend on the data ONLY through pairwise dot products $x_i^T x_j$. If we have a function $K(x_i, x_j)$ that computes the dot product in the high-dimensional feature space WITHOUT explicitly computing the mapping, we get the power of the high-dimensional representation at the cost of a simple function evaluation.
 
-```
-K(x_i, x_j) = phi(x_i)^T phi(x_j)
-```
+$$K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$$
 
-We never compute phi(x). We only compute K(x_i, x_j).
+We never compute $\phi(x)$. We only compute $K(x_i, x_j)$.
 
 **Common kernels:**
 
-1. **Linear:** K(x, y) = x^T y. No transformation.
+1. **Linear:** $K(x, y) = x^T y$. No transformation.
 
-2. **Polynomial:** K(x, y) = (gamma * x^T y + coef0)^degree. Computes dot products in the space of all polynomial feature combinations up to the given degree.
+2. **Polynomial:** $K(x, y) = (\gamma \, x^T y + c_0)^d$. Computes dot products in the space of all polynomial feature combinations up to the given degree.
 
-3. **RBF (Radial Basis Function):** K(x, y) = exp(-gamma * ||x - y||^2). This is the most commonly used kernel. It corresponds to an *infinite-dimensional* feature space. The bandwidth parameter gamma controls the "reach" of each training point: small gamma means wide influence, large gamma means narrow influence.
+3. **RBF (Radial Basis Function):** $K(x, y) = \exp(-\gamma \|x - y\|^2)$. This is the most commonly used kernel. It corresponds to an *infinite-dimensional* feature space. The bandwidth parameter $\gamma$ controls the "reach" of each training point: small $\gamma$ means wide influence, large $\gamma$ means narrow influence.
 
 **Why the kernel trick is genius:** It lets you compute in an infinite-dimensional feature space in finite time. The computational cost depends on the number of training samples, not the dimensionality of the feature space.
 
@@ -665,15 +628,15 @@ Real data has noise and overlap between classes. A hard-margin SVM (requiring pe
 
 The soft-margin SVM introduces slack variables, allowing some misclassifications:
 
-```
-minimize    (1/2) * ||w||^2 + C * sum(xi_i)
-subject to  y_i * (w^T x_i + b) >= 1 - xi_i
-            xi_i >= 0
-```
+$$\begin{aligned}
+\min_{w, b, \xi} \quad & \frac{1}{2} \|w\|^2 + C \sum_{i=1}^{n} \xi_i \\
+\text{s.t.} \quad & y_i (w^T x_i + b) \geq 1 - \xi_i \\
+& \xi_i \geq 0
+\end{aligned}$$
 
-**The C parameter controls the tradeoff:**
-- Large C: penalize misclassifications heavily. Small margin, low bias, high variance.
-- Small C: tolerate more misclassifications. Large margin, high bias, low variance.
+**The $C$ parameter controls the tradeoff:**
+- Large $C$: penalize misclassifications heavily. Small margin, low bias, high variance.
+- Small $C$: tolerate more misclassifications. Large margin, high bias, low variance.
 
 ```
 Small C (underfitting):          Large C (overfitting):
@@ -694,7 +657,7 @@ Small C (underfitting):          Large C (overfitting):
 - You need a strong model without much tuning.
 
 **SVMs struggle when:**
-- Dataset is very large (kernel SVM training is O(n^2) to O(n^3)).
+- Dataset is very large (kernel SVM training is $O(n^2)$ to $O(n^3)$).
 - Data is high-dimensional and sparse (though linear SVM is fine here).
 - You need to output calibrated probabilities (SVMs naturally output distances, not probabilities).
 - Feature learning is needed (images, raw text).
@@ -727,11 +690,9 @@ At each node, the tree tries every feature and every threshold, choosing the spl
 
 #### Gini Impurity
 
-```
-Gini(S) = 1 - sum_{k=1}^{K} p_k^2
-```
+$$\text{Gini}(S) = 1 - \sum_{k=1}^{K} p_k^2$$
 
-Where p_k is the proportion of samples belonging to class k.
+Where $p_k$ is the proportion of samples belonging to class $k$.
 
 **Intuition:** The probability that two randomly chosen samples from the set have different classes.
 
@@ -740,15 +701,11 @@ Where p_k is the proportion of samples belonging to class k.
 
 #### Entropy and Information Gain
 
-```
-Entropy(S) = -sum_{k=1}^{K} p_k * log2(p_k)
-```
+$$H(S) = -\sum_{k=1}^{K} p_k \log_2(p_k)$$
 
 **Intuition:** The expected number of bits needed to encode the class of a random sample.
 
-```
-Information Gain = Entropy(parent) - weighted_average(Entropy(children))
-```
+$$\text{IG} = H(\text{parent}) - \sum_{c \in \text{children}} \frac{|S_c|}{|S|} H(S_c)$$
 
 The split that maximizes information gain removes the most uncertainty about the class.
 
@@ -779,9 +736,7 @@ This is the most important conceptual framework in all of machine learning. It g
 
 **The decomposition:** For any model, the expected prediction error can be decomposed as:
 
-```
-Expected Error = Bias^2 + Variance + Irreducible Noise
-```
+$$\mathbb{E}[\text{Error}] = \text{Bias}^2 + \text{Variance} + \sigma_{\text{noise}}^2$$
 
 **What each term means:**
 
@@ -831,10 +786,10 @@ Random forests create diversity through two mechanisms:
 
 1. **Bagging (Bootstrap Aggregating):** Each tree is trained on a random bootstrap sample (sample with replacement) from the training data. Roughly 63% of samples are selected for each tree; the rest are "out-of-bag."
 
-2. **Feature randomness:** At each split, the tree considers only a random subset of features (typically sqrt(d) for classification, d/3 for regression). This decorrelates the trees.
+2. **Feature randomness:** At each split, the tree considers only a random subset of features (typically $\sqrt{d}$ for classification, $d/3$ for regression). This decorrelates the trees.
 
 **The math of why averaging works:**
-If you have B independent estimators, each with variance sigma^2, the variance of their average is sigma^2/B. Of course, the trees are not fully independent (they are trained on overlapping data), but the feature randomness helps decorrelate them.
+If you have $B$ independent estimators, each with variance $\sigma^2$, the variance of their average is $\sigma^2 / B$. Of course, the trees are not fully independent (they are trained on overlapping data), but the feature randomness helps decorrelate them.
 
 ```python
 # Simplified Random Forest
@@ -877,14 +832,15 @@ While random forests reduce variance by averaging, boosting reduces bias by *seq
 Instead of optimizing parameters, we are optimizing a *function* (the ensemble prediction). At each step, we compute the "gradient" of the loss with respect to the current predictions, and fit a tree to approximate that gradient.
 
 For regression with MSE:
-```
-Step 1: Fit initial prediction F_0(x) = mean(y)
-Step 2: Compute residuals r_i = y_i - F_0(x_i)
-Step 3: Fit tree h_1 to residuals r
-Step 4: Update: F_1(x) = F_0(x) + lr * h_1(x)
-Step 5: Compute new residuals r_i = y_i - F_1(x_i)
-Step 6: Repeat...
-```
+
+$$\begin{aligned}
+&\text{Step 1: } F_0(x) = \bar{y} \\
+&\text{Step 2: } r_i = y_i - F_0(x_i) \\
+&\text{Step 3: Fit tree } h_1 \text{ to residuals } r \\
+&\text{Step 4: } F_1(x) = F_0(x) + \eta \, h_1(x) \\
+&\text{Step 5: } r_i = y_i - F_1(x_i) \\
+&\text{Step 6: Repeat...}
+\end{aligned}$$
 
 The learning rate (shrinkage) controls how much each tree contributes. Smaller learning rate requires more trees but typically gives better generalization.
 
@@ -963,10 +919,10 @@ def kmeans(X, K, max_iters=100):
 ```
 
 **Objective function:**
-```
-J = sum_{i=1}^{n} ||x_i - mu_{c_i}||^2
-```
-Where c_i is the cluster assignment of point i and mu_{c_i} is the center of that cluster.
+
+$$J = \sum_{i=1}^{n} \|x_i - \mu_{c_i}\|^2$$
+
+Where $c_i$ is the cluster assignment of point $i$ and $\mu_{c_i}$ is the center of that cluster.
 
 K-Means minimizes the within-cluster sum of squares. This is a non-convex optimization — the algorithm is not guaranteed to find the global minimum. Run it multiple times with different initializations and keep the best.
 
@@ -991,24 +947,21 @@ PCA finds the directions of maximum variance in the data and projects onto them.
 
 **The variance maximization formulation:**
 
-We want to find a direction (unit vector u) that maximizes the variance of the projected data:
+We want to find a direction (unit vector $u$) that maximizes the variance of the projected data:
 
-```
-Var(X @ u) = u^T Sigma u
-```
+$$\text{Var}(Xu) = u^T \Sigma u$$
 
-Where Sigma = (1/n) X^T X is the covariance matrix (assuming zero-mean data).
+Where $\Sigma = \frac{1}{n} X^T X$ is the covariance matrix (assuming zero-mean data).
 
-Subject to ||u|| = 1, this is maximized when u is the eigenvector of Sigma corresponding to the largest eigenvalue.
+Subject to $\|u\| = 1$, this is maximized when $u$ is the eigenvector of $\Sigma$ corresponding to the largest eigenvalue.
 
 **The eigenvalue decomposition:**
-```
-Sigma = V Lambda V^T
-```
+
+$$\Sigma = V \Lambda V^T$$
 
 Where:
-- V is the matrix of eigenvectors (each column is a principal component direction).
-- Lambda is a diagonal matrix of eigenvalues (each one is the variance explained by that component).
+- $V$ is the matrix of eigenvectors (each column is a principal component direction).
+- $\Lambda$ is a diagonal matrix of eigenvalues (each one is the variance explained by that component).
 - The eigenvectors are orthogonal. They form a new coordinate system aligned with the data's variance.
 
 ```
@@ -1104,7 +1057,7 @@ Input --> [Encoder] --> Bottleneck --> [Decoder] --> Reconstruction
   x          f(x)         z             g(z)          x_hat
                      (low-dim)
 
-Loss = ||x - x_hat||^2
+Loss $= \|x - \hat{x}\|^2$
 
 The bottleneck forces the network to learn a compressed representation.
 ```
@@ -1188,7 +1141,7 @@ param_grid = {
 # Total combinations: 4 * 4 * 4 = 64
 ```
 
-**Problem:** Exponential growth. With 5 hyperparameters and 5 values each, that is 5^5 = 3,125 combinations. Each evaluated with 5-fold CV = 15,625 model fits.
+**Problem:** Exponential growth. With 5 hyperparameters and 5 values each, that is $5^5 = 3{,}125$ combinations. Each evaluated with 5-fold CV = 15,625 model fits.
 
 #### Random Search
 
@@ -1334,16 +1287,16 @@ is the default starting point.
 
 Regularization is any technique that prevents a model from fitting the training data too closely. It is a weapon against overfitting (high variance).
 
-**L2 regularization (Ridge):** Add ||w||^2 to the loss.
-```
-L_ridge = MSE + lambda * sum(w_i^2)
-```
+**L2 regularization (Ridge):** Add $\|w\|^2$ to the loss.
+
+$$L_{\text{ridge}} = \text{MSE} + \lambda \sum_{i} w_i^2$$
+
 Pushes weights toward zero but never exactly to zero. Shrinks all features.
 
-**L1 regularization (Lasso):** Add ||w||_1 to the loss.
-```
-L_lasso = MSE + lambda * sum(|w_i|)
-```
+**L1 regularization (Lasso):** Add $\|w\|_1$ to the loss.
+
+$$L_{\text{lasso}} = \text{MSE} + \lambda \sum_{i} |w_i|$$
+
 Pushes some weights to exactly zero. Performs feature selection.
 
 **Elastic Net:** Combination of L1 and L2.
@@ -1356,21 +1309,21 @@ Pushes some weights to exactly zero. Performs feature selection.
 
 | Symbol | Meaning |
 |--------|---------|
-| n | Number of training samples |
-| d | Number of features |
-| K | Number of classes |
-| X | Feature matrix, shape (n, d) |
-| y | Target vector, shape (n,) |
-| w | Weight vector, shape (d,) |
-| b | Bias (scalar) |
-| y_hat | Predictions |
-| lr, eta | Learning rate |
-| lambda | Regularization strength |
-| sigma() | Sigmoid function |
-| @ | Matrix multiplication (in NumPy) |
-| ||v|| | L2 norm of vector v |
-| X^T | Transpose of X |
-| dL/dw | Partial derivative of L with respect to w |
+| $n$ | Number of training samples |
+| $d$ | Number of features |
+| $K$ | Number of classes |
+| $X$ | Feature matrix, shape $(n, d)$ |
+| $y$ | Target vector, shape $(n,)$ |
+| $w$ | Weight vector, shape $(d,)$ |
+| $b$ | Bias (scalar) |
+| $\hat{y}$ | Predictions |
+| $\eta$ | Learning rate |
+| $\lambda$ | Regularization strength |
+| $\sigma(\cdot)$ | Sigmoid function |
+| `@` | Matrix multiplication (in NumPy) |
+| $\|v\|$ | L2 norm of vector $v$ |
+| $X^T$ | Transpose of $X$ |
+| $\frac{\partial L}{\partial w}$ | Partial derivative of $L$ with respect to $w$ |
 
 ---
 
@@ -1414,44 +1367,50 @@ softmax = lambda z: np.exp(z - z.max(-1, keepdims=True)) / \
 ## Appendix C: Key Formulas Quick Reference
 
 **Linear Regression (MSE):**
-```
-Loss:     L = (1/n) * ||Xw + b - y||^2
-Gradient: dw = (2/n) * X^T(Xw + b - y)
-Normal:   w = (X^T X)^{-1} X^T y
-```
+
+$$\begin{aligned}
+\text{Loss:} \quad & L = \frac{1}{n} \|Xw + b - y\|^2 \\
+\text{Gradient:} \quad & \frac{\partial L}{\partial w} = \frac{2}{n} X^T(Xw + b - y) \\
+\text{Normal Eq:} \quad & w = (X^T X)^{-1} X^T y
+\end{aligned}$$
 
 **Logistic Regression (BCE):**
-```
-Model:    p = sigmoid(Xw + b)
-Loss:     L = -(1/n) * [y^T log(p) + (1-y)^T log(1-p)]
-Gradient: dw = (1/n) * X^T(p - y)
-```
+
+$$\begin{aligned}
+\text{Model:} \quad & p = \sigma(Xw + b) \\
+\text{Loss:} \quad & L = -\frac{1}{n} \left[ y^T \log(p) + (1-y)^T \log(1-p) \right] \\
+\text{Gradient:} \quad & \frac{\partial L}{\partial w} = \frac{1}{n} X^T(p - y)
+\end{aligned}$$
 
 **Softmax + Categorical Cross-Entropy:**
-```
-Model:    p_k = exp(z_k) / sum(exp(z_j))
-Loss:     L = -(1/n) * sum_i log(p_{i, true_class})
-```
+
+$$\begin{aligned}
+\text{Model:} \quad & p_k = \frac{e^{z_k}}{\sum_j e^{z_j}} \\
+\text{Loss:} \quad & L = -\frac{1}{n} \sum_{i} \log(p_{i,\, \text{true class}})
+\end{aligned}$$
 
 **SVM:**
-```
-Objective: min (1/2)||w||^2 + C * sum(xi_i)
-Kernel:    K(x,y) = exp(-gamma * ||x-y||^2)    [RBF]
-```
+
+$$\begin{aligned}
+\text{Objective:} \quad & \min \; \frac{1}{2}\|w\|^2 + C \sum_i \xi_i \\
+\text{RBF Kernel:} \quad & K(x, y) = \exp(-\gamma \|x - y\|^2)
+\end{aligned}$$
 
 **Decision Tree:**
-```
-Gini:    G = 1 - sum(p_k^2)
-Entropy: H = -sum(p_k * log2(p_k))
-IG:      H(parent) - weighted_avg(H(children))
-```
+
+$$\begin{aligned}
+\text{Gini:} \quad & G = 1 - \sum_k p_k^2 \\
+\text{Entropy:} \quad & H = -\sum_k p_k \log_2(p_k) \\
+\text{IG:} \quad & H(\text{parent}) - \text{weighted avg } H(\text{children})
+\end{aligned}$$
 
 **PCA:**
-```
-Covariance:  Sigma = (1/n) * X^T X   (centered X)
-Decompose:   Sigma = V Lambda V^T
-Project:     X_reduced = X @ V[:, :k]
-```
+
+$$\begin{aligned}
+\text{Covariance:} \quad & \Sigma = \frac{1}{n} X^T X \quad (\text{centered } X) \\
+\text{Decompose:} \quad & \Sigma = V \Lambda V^T \\
+\text{Project:} \quad & X_{\text{reduced}} = X V_{:,\, :k}
+\end{aligned}$$
 
 ---
 

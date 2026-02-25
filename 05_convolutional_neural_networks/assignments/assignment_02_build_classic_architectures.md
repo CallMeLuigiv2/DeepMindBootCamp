@@ -51,12 +51,12 @@ Layer 5: Linear(84, 10)
 
    | Layer | Calculation | Parameters |
    |-------|------------|------------|
-   | Conv1 | (5*5*1 + 1) * 6 | 156 |
-   | Conv2 | (5*5*6 + 1) * 16 | 2,416 |
+   | Conv1 | $(5 \times 5 \times 1 + 1) \times 6$ | 156 |
+   | Conv2 | $(5 \times 5 \times 6 + 1) \times 16$ | 2,416 |
    | FC1 | (400 + 1) * 120 | ? |
    | FC2 | (120 + 1) * 84 | ? |
    | FC3 | (84 + 1) * 10 | ? |
-   | **Total** | | **~61.7K** |
+   | **Total** | | **$\sim$61.7K** |
 
 3. **Train on MNIST:**
    - Use `torchvision.datasets.MNIST`
@@ -116,15 +116,15 @@ Implement BOTH versions and compare parameter counts and accuracy.
 
    | Layer | Calculation | Parameters |
    |-------|------------|------------|
-   | Conv(3, 64, 3) | (3*3*3+1)*64 | 1,792 |
-   | BN(64) | 2*64 | 128 |
+   | Conv(3, 64, 3) | $(3 \times 3 \times 3+1) \times 64$ | 1,792 |
+   | BN(64) | $2 \times 64$ | 128 |
    | Conv(64, 128, 3) | ? | ? |
    | ... | ... | ... |
    | FC(512, 4096) | ? | ? |
    | FC(4096, 4096) | ? | ? |
    | FC(4096, 10) | ? | ? |
-   | **Total (with FC)** | | **~28M** |
-   | **Total (with GAP)** | | **~9.2M** |
+   | **Total (with FC)** | | **$\sim$28M** |
+   | **Total (with GAP)** | | **$\sim$9.2M** |
 
    **Question:** What percentage of parameters are in the FC layers? (This is why VGG was
    considered parameter-inefficient and why GAP was adopted.)
@@ -214,7 +214,7 @@ class BasicBlock(nn.Module):
    | Layer 3 (2 blocks + shortcut) | ? |
    | Layer 4 (2 blocks + shortcut) | ? |
    | FC | ? |
-   | **Total** | **~11.2M** |
+   | **Total** | **$\sim$11.2M** |
 
 3. **Train on CIFAR-10:** Use the same training setup as VGG (same augmentation, optimizer,
    LR schedule, epochs). This ensures a fair comparison.
@@ -242,7 +242,7 @@ be adapted for CIFAR-10: change input channels to 3 and output classes to 10).
 
 | Metric | LeNet-5 | VGG-11 (GAP) | ResNet-18 |
 |--------|---------|--------------|-----------|
-| Total parameters | ~62K | ~9.2M | ~11.2M |
+| Total parameters | $\sim$62K | $\sim$9.2M | $\sim$11.2M |
 | Conv parameters | | | |
 | FC parameters | | | |
 | Test accuracy (best) | | | |

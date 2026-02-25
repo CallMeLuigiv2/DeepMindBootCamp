@@ -61,9 +61,9 @@ def complex_step(f, x, h=1e-20):
 
 #### 1b. Compare Accuracy
 
-For f(x) = sin(x) at x = 1.0 (where the true derivative is cos(1.0)):
+For $f(x) = \sin(x)$ at $x = 1.0$ (where the true derivative is $\cos(1.0)$):
 
-1. Compute the derivative using all three methods for h = 10^(-1), 10^(-2), ..., 10^(-15)
+1. Compute the derivative using all three methods for $h = 10^{-1}, 10^{-2}, \ldots, 10^{-15}$
 2. Plot the absolute error vs h on a log-log scale
 3. Observe: forward difference has a V-shaped error curve (too large h = truncation error, too small h = floating point cancellation). Central difference is better. Complex step has no cancellation problem.
 
@@ -99,17 +99,17 @@ plt.savefig('numerical_diff_accuracy.png', dpi=150)
 plt.show()
 ```
 
-**Written question:** Why does forward difference accuracy WORSEN when h becomes very
-small (below ~10^(-8))? Why does the complex step method not have this problem?
+**Written question:** Why does forward difference accuracy WORSEN when $h$ becomes very
+small (below $\sim 10^{-8}$)? Why does the complex step method not have this problem?
 
 #### 1c. Gradient Checking for Common DL Functions
 
 Implement the analytical derivatives for these functions and verify them numerically:
 
-1. **ReLU**: f(x) = max(0, x). Derivative = 1 if x > 0, 0 if x < 0.
-2. **Sigmoid**: f(x) = 1/(1 + exp(-x)). Derivative = f(x)(1 - f(x)).
-3. **Softplus**: f(x) = log(1 + exp(x)). Derivative = sigmoid(x).
-4. **Tanh**: f(x) = tanh(x). Derivative = 1 - tanh(x)^2.
+1. **ReLU**: $f(x) = \max(0, x)$. Derivative $= 1$ if $x > 0$, $0$ if $x < 0$.
+2. **Sigmoid**: $f(x) = \frac{1}{1 + e^{-x}}$. Derivative $= f(x)(1 - f(x))$.
+3. **Softplus**: $f(x) = \log(1 + e^x)$. Derivative $= \sigma(x)$.
+4. **Tanh**: $f(x) = \tanh(x)$. Derivative $= 1 - \tanh^2(x)$.
 
 For each function:
 - Plot the function and its derivative on the same axes (range [-5, 5])
@@ -288,9 +288,9 @@ print(f"dL/db3: manual = {dL_db3:.6f}, pytorch = {b3_t.grad.item():.6f}")
 # Compare all gradients. They MUST match to at least 6 decimal places.
 ```
 
-**Written question:** In the backward pass, you computed dL/da2 = dL/dz3 * w3. Notice
-that this gradient flows THROUGH the weight w3. If w3 is very small (close to 0), what
-happens to the gradient flowing to earlier layers? If w3 is very large, what happens?
+**Written question:** In the backward pass, you computed $\frac{\partial \mathcal{L}}{\partial a_2} = \frac{\partial \mathcal{L}}{\partial z_3} \cdot w_3$. Notice
+that this gradient flows THROUGH the weight $w_3$. If $w_3$ is very small (close to 0), what
+happens to the gradient flowing to earlier layers? If $w_3$ is very large, what happens?
 Relate this to the vanishing and exploding gradient problems. (4-6 sentences)
 
 #### 2c. Visualize the Gradient Flow
@@ -552,7 +552,7 @@ class Adam:
 
 #### 4b. Race on the Ill-Conditioned Quadratic
 
-Run all four optimizers on f(x, y) = 0.5*x^2 + 10*y^2, starting from (5, 1):
+Run all four optimizers on $f(x, y) = 0.5x^2 + 10y^2$, starting from $(5, 1)$:
 
 - Vanilla GD: lr = 0.05
 - Momentum: lr = 0.05, beta = 0.9
@@ -647,15 +647,15 @@ Plot and classify each function as convex, non-convex, or strictly convex:
 For each function:
 - Plot it on [-3, 3]
 - Pick two points and verify (or violate) the convexity condition:
-  f(t*a + (1-t)*b) <= t*f(a) + (1-t)*f(b) for t in [0, 1]
+  $f(ta + (1-t)b) \leq t \cdot f(a) + (1-t) \cdot f(b)$ for $t \in [0, 1]$
 - Draw the line segment between f(a) and f(b) and the function curve
 
 #### 5b. Finding Multiple Local Minima
 
-For f(x) = x^4 - 2x^2:
+For $f(x) = x^4 - 2x^2$:
 
-1. Find all critical points analytically (set f'(x) = 0 and solve)
-2. Classify each as local minimum, local maximum, or saddle (using f''(x))
+1. Find all critical points analytically (set $f'(x) = 0$ and solve)
+2. Classify each as local minimum, local maximum, or saddle (using $f''(x)$)
 3. Run gradient descent from 5 different starting points: x = -2, -0.5, 0, 0.5, 2
 4. Show that different starting points converge to different minima
 
@@ -711,7 +711,7 @@ saddle points is essential for understanding why stochastic training works.
 
 #### 6a. Visualizing a Saddle Point
 
-The function f(x, y) = x^2 - y^2 has a saddle point at the origin.
+The function $f(x, y) = x^2 - y^2$ has a saddle point at the origin.
 
 1. Create a 3D surface plot (using `ax = fig.add_subplot(111, projection='3d')`)
 2. Create a contour plot showing the characteristic "X" shape of the contour lines
@@ -785,9 +785,9 @@ traj_sgd = run_optimization(start=(0.01, 0.01), lr=0.1, n_steps=50, noise_std=0.
 
 #### 6c. The Effect of Noise Magnitude
 
-Run SGD with different noise levels: noise_std = 0.0, 0.01, 0.05, 0.1, 0.5, 1.0.
+Run SGD with different noise levels: $\sigma_{\text{noise}} = 0.0, 0.01, 0.05, 0.1, 0.5, 1.0$.
 For each, run 100 times from the same starting point and measure:
-1. How many steps to escape the saddle (defined as |x| + |y| > 1)
+1. How many steps to escape the saddle (defined as $|x| + |y| > 1$)
 2. The final function value after 200 steps
 
 Plot: noise level vs average escape time.
@@ -821,7 +821,7 @@ Start from a random point near the origin. Run GD and SGD. Track the norm of x o
 time. Does SGD escape faster? How does the escape direction relate to the maximum
 directions of the Hessian?
 
-**Written question:** At the saddle point, the Hessian is diag(2, 2, 2, 2, 2, -2, -2, -2, -2, -2).
+**Written question:** At the saddle point, the Hessian is $\text{diag}(2, 2, 2, 2, 2, -2, -2, -2, -2, -2)$.
 The negative eigenvalues correspond to "escape directions." In a real neural network
 with millions of parameters, what fraction of eigenvalues would need to be negative for
 the critical point to be a saddle point rather than a local minimum? (3-5 sentences)
