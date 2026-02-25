@@ -21,7 +21,7 @@ working implementation by dinner. **That's where we're going.**
 
 ---
 
-## Course Structure (16 Weeks)
+## Course Structure (18 Weeks)
 
 | Week | Module | Focus |
 |------|--------|-------|
@@ -36,7 +36,12 @@ working implementation by dinner. **That's where we're going.**
 | 14 | **09 - Advanced PyTorch** | Custom autograd, hooks, distributed training, TorchScript. |
 | 15 | **10 - AI Performance Engineering** | Profiling, mixed precision, memory optimization, speed. |
 | 15-16 | **11 - Reading Research Papers** | How to read, critique, and implement papers. |
-| 16 | **12 - Capstone Project** | Your DeepMind-level project. End-to-end. |
+| 16-17 | **13 - Reinforcement Learning** | MDPs, DQN, PPO, RLHF — DeepMind's bread and butter. |
+| 18 | **12 - Capstone Project** | Your DeepMind-level project. End-to-end. |
+
+> **Why RL was added:** DeepMind's legacy — AlphaGo, AlphaProof, Gemini's RLHF — is built
+> on reinforcement learning. A "DeepMind-style" course without RL is incomplete. This module
+> covers the full pipeline from tabular Q-learning through PPO to RLHF for language models.
 
 ---
 
